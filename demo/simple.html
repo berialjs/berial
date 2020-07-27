@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>快速上手</title>
+    <script src="../index.js"></script>
+    <script>
+         function load(app) {
+            return () => new Promise((resolve, reject) => {
+                setTimeout(function () {
+                    resolve({
+                        render: [app.render]
+                    });
+                }, 1000);
+            });
+         }
+    </script>
+    <script>
+      ;(async (global) => {
+        const berial = global.berial
+        const One = {
+          render: (value) => `${value}`,
+        }
+
+        const Two = {
+          render: (value) => `${value}`,
+        }
+
+        berial.define('one-app', load(One), '/app1')
+        berial.define('two-app', load(Two), '/app2')
+      })(window)
+    </script>
+  </head>
+  <body>
+    <one-app></one-app>
+    <two-app></two-app>>
+  </body>
+</html>
