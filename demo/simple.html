@@ -20,19 +20,23 @@
       ;(async (global) => {
         const berial = global.berial
         const One = {
-          render: (host) => (host.innerHTML = '111'),
+          render: (host) =>{
+              console.log(host)
+          },
         }
 
         const Two = {
           render: (host) => (host.innerHTML = '222'),
         }
 
-        berial.define(load(One), '/app1')
-        berial.define(load(Two), '/app2')
+        berial.define(load(One), '#/app1')
+        berial.define(load(Two), '#/app2')
       })(window)
     </script>
   </head>
   <body>
     <berial-app></berial-app>
+    <a href="#/app1">app1</a>
+    <a href="#/app2">app2</a>
   </body>
 </html>

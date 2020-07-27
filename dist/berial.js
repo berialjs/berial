@@ -4,24 +4,41 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.berial = {}));
 }(this, (function (exports) { 'use strict';
 
-  const LOAD = 0;
-
   let apps = [];
 
   function define(view, route) {
+    class Berial extends HTMLElement {
+      constructor() {
+        super();
+        let template = document.createElement('template');
+        template.innerHTML = '<div></div>';
+        this.attachShadow({
+          mode: 'open',
+        }).appendChild(template.content.cloneNode(true));
+      }
+    }
+
+
+
+    const hasDef = window.customElements.get('berial-app');
+    if (!hasDef) {
+
+      customElements.define('berial-app', Berial);
+    }
+
     apps.push({
       view,
       route,
-      status: LOAD,
+      Berial,
     });
+
     return invoke()
   }
 
   function invoke() {
-      const hash = window.location.hash;
+    const current = window.location.hash;
 
-    let ps = apps.map(shouldLoad).filter(item=>item.route === hash);
-    console.log(ps);
+    let ps = apps.filter((item) => item.route === current).map(shouldLoad);
     return Promise.all(ps)
       .then(() => {
         return apps
@@ -35,40 +52,21 @@
     let p = app.view({});
     return p
       .then((module) => {
-        app.render = queueJob(module.render);
-        return app
+        queueJob(module.render, app.Berial);
       })
       .catch((e) => {
-        console.log(e);
         return app
       })
   }
 
-  function queueJob(queue) {
-    return (props) => {
-      return new Promise((resolve, reject) => {
-        wait(0);
-        function wait(i) {
-          const fn = queue[i](props);
-          fn.then(() => {
-            if (i === queue.length - 1) {
-              resolve();
-            } else {
-              wait(i++);
-            }
-          }).catch((e) => reject(e));
-        }
-      })
-    }
+  function queueJob(queue, Berial) {
+    queue.forEach((item) => {
+      item(Berial.shadowRoot);
+    });
   }
 
-  function reroute() {
-      
-    }
-
-
-  window.addEventListener('hashchange', reroute);
-  window.addEventListener('popstate', reroute);
+  window.addEventListener('hashchange', invoke);
+  window.addEventListener('popstate', invoke);
 
   exports.define = define;
 
