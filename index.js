@@ -2,10 +2,9 @@ const LOAD = 0
 
 let apps = []
 
-function define(tag, app, route) {
+export function define(view, route) {
   apps.push({
-    tag,
-    app,
+    view,
     route,
     status: LOAD,
   })
@@ -13,10 +12,13 @@ function define(tag, app, route) {
 }
 
 function invoke() {
-  let ps = apps.map(shouldLoad)
+    const hash = window.location.hash
+
+  let ps = apps.map(shouldLoad).filter(item=>item.route === hash)
+  console.log(ps)
   return Promise.all(ps)
     .then(() => {
-      return []
+      return apps
     })
     .catch((e) => {
       console.log(e)
@@ -24,7 +26,7 @@ function invoke() {
 }
 
 function shouldLoad(app) {
-  let p = app.loadApp({})
+  let p = app.view({})
   return p
     .then((module) => {
       app.render = queueJob(module.render)
@@ -32,7 +34,6 @@ function shouldLoad(app) {
     })
     .catch((e) => {
       console.log(e)
-      app.status = LOAD_ERROR
       return app
     })
 }
@@ -55,4 +56,10 @@ function queueJob(queue) {
   }
 }
 
-function processRoutes() {}
+function reroute() {
+    
+  }
+
+
+window.addEventListener('hashchange', reroute);
+window.addEventListener('popstate', reroute);
