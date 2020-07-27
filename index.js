@@ -32,7 +32,7 @@ export function define(view, route) {
 }
 
 function invoke() {
-  const current = window.location.hash
+  const current = window.location.hash || window.location.pathname
 
   let ps = apps.filter((item) => item.route === current).map(shouldLoad)
   return Promise.all(ps)
