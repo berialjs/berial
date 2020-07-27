@@ -20,9 +20,9 @@
       ;(async (global) => {
         const berial = global.berial
         const One = {
-          render: (host) =>{
-              console.log(host)
-          },
+          render: (host) =>
+            (host.innerHTML = '111')
+          ,
         }
 
         const Two = {
@@ -35,8 +35,8 @@
     </script>
   </head>
   <body>
-    <berial-app></berial-app>
     <a href="#/app1">app1</a>
     <a href="#/app2">app2</a>
+    <berial-app></berial-app>
   </body>
 </html>

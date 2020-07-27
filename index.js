@@ -57,7 +57,7 @@ function shouldLoad(app) {
 
 function queueJob(queue, Berial) {
   queue.forEach((item) => {
-    item(Berial.shadowRoot)
+    item(document.querySelector('berial-app').shadowRoot)
   })
 }
 
