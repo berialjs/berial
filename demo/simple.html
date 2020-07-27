@@ -8,7 +8,7 @@
       function load(app) {
         return (props) =>
           new Promise((resolve, reject) => {
-            setTimeout( ()=> {
+            setTimeout(() => {
               resolve({
                 render: [app.render],
               })
@@ -20,9 +20,7 @@
       ;(async (global) => {
         const berial = global.berial
         const One = {
-          render: (host) =>
-            (host.innerHTML = '111')
-          ,
+          render: (host) => (host.innerHTML = '111'),
         }
 
         const Two = {
