@@ -8,17 +8,22 @@
       ;(async (global) => {
         const berial = global.berial
         const One = {
-          mount: (host) => (host.shadowRoot.innerHTML = '111'),
-          unmount:(host) => (host.shadowRoot.innerHTML = ''),
+          count: 0,
+          mount: (host) => {
+            console.log(host.count)
+            host.shadowRoot.innerHTML = `<button>${host.count}</button>`
+            host.shadowRoot.querySelector('button').onclick = () => host.count++
+          },
+          unmount: (host) => (host.shadowRoot.innerHTML = ''),
         }
 
         const Two = {
           mount: (host) => (host.shadowRoot.innerHTML = '222'),
-          unmount:(host) => (host.shadowRoot.innerHTML = ''),
+          unmount: (host) => (host.shadowRoot.innerHTML = ''),
         }
 
-        berial.define('one-app',One, '#/app1')
-        berial.define('two-app',Two, '#/app2')
+        berial.define('one-app', One, '#/app1')
+        berial.define('two-app', Two, '#/app2')
       })(window)
     </script>
   </head>
