@@ -3,25 +3,26 @@
 micro frontend framework
 
 ```js
+const { resolve } = require("path");
+const { rejects } = require("assert");
+
 (async (ctx) => {
-  const { define, h } = ctx.berial
+  const { define} = ctx.berial;
 
   const One = {
-    count: 0, // props
-    render: ({count}) => h`<div>${count}</div>`,
-  }
-
-  const Two = {
-    user: fetch(`https://api.clicli.me/user`),
-    render: ({user}) => h`<div>
-      ${h(
-        h`loading`, // sync html
-        user.then(({name}) => h`${name}`) // async html
-      )}
-    </div>`,
+    count: 0,
+    render: ({ count }) => `<div>${count}</div>`,
   };
 
-  define("one-app", One) 
-  define("two-app", Two, "#/app2") // route
-})(window)
+  const Two = {
+    name: "132",
+    render: ({ name }) =>
+      new Promise((resolve) =>
+        setTimeout(() => resolve(`<div>${name}</div>`), 1000)
+      ),
+  };
+
+  define("one-app", One, "#/app1")
+  define("two-app", Two, "#/app2")
+})(window);
 ```
