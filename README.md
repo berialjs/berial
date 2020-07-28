@@ -7,11 +7,11 @@ micro frontend framework
   const { define } = ctx.berial
 
   const React = {
-    render: (host) => ReactDOM.render(<App msg="react" />, host.shadowRoot)
+    render: host => ReactDOM.render(<App msg="react" />, host.shadowRoot)
   }
 
   const Vue = {
-    render: (host) =>
+    render: host =>
       new Vue({
         el: host.name,
         data: { msg: "vue" },
@@ -19,7 +19,7 @@ micro frontend framework
       }),
   }
 
-  define("react-app", React, "#/app1")
-  define("vue-app", Vue, "#/app2")
+  register("react-app", React, "#/app1")
+  register("vue-app", Vue, "#/app2")
 })(window)
 ```
