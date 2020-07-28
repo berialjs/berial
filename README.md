@@ -6,20 +6,20 @@ micro frontend framework
 (async (ctx) => {
   const { define } = ctx.berial
 
-  const One = {
-    count: 0,
-    render: ({ count }) => `<div>${count}</div>`,
+  const React = {
+    render: (host) => ReactDOM.render(<App msg="react" />, host.shadowRoot)
   }
 
-  const Two = {
-    name: "132",
-    render: ({ name }) =>
-      new Promise((resolve) =>
-        setTimeout(() => resolve(`<div>${name}</div>`), 1000)
-      ),
+  const Vue = {
+    render: (host) =>
+      new Vue({
+        el: host.name,
+        data: { msg: "vue" },
+        template: `<div>{{ msg }}</div>`,
+      }),
   }
 
-  define("one-app", One, "#/app1")
-  define("two-app", Two, "#/app2")
+  define("react-app", React, "#/app1")
+  define("vue-app", Vue, "#/app2")
 })(window)
 ```
