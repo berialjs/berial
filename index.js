@@ -1,65 +1,47 @@
-const LOAD = 0
-
 let apps = []
 
-export function define(view, route) {
+export function define(tag, component, route) {
   class Berial extends HTMLElement {
     constructor() {
       super()
       let template = document.createElement('template')
-      template.innerHTML = '<div></div>'
+      template.innerHTML = `<!-- ${tag} -- ${route} -->`
       this.attachShadow({
         mode: 'open',
       }).appendChild(template.content.cloneNode(true))
     }
   }
 
-
-
-  const hasDef = window.customElements.get('berial-app')
+  const hasDef = window.customElements.get(tag)
   if (!hasDef) {
-
-    customElements.define('berial-app', Berial)
+    customElements.define(tag, Berial)
   }
 
   apps.push({
-    view,
+    tag,
+    component,
     route,
-    Berial,
   })
 
   return invoke()
 }
 
 function invoke() {
-  const current = window.location.hash || window.location.pathname
+  const path = window.location.hash || window.location.pathname
 
-  let ps = apps.filter((item) => item.route === current).map(shouldLoad)
-  return Promise.all(ps)
-    .then(() => {
-      return apps
+  apps.forEach((app) => {
+    defer(() => {
+      const host = document.querySelector(app.tag)
+      if (app.route === path) {
+        app.component.mount(host)
+      } else {
+        app.component.unmount(host)
+      }
     })
-    .catch((e) => {
-      console.log(e)
-    })
-}
-
-function shouldLoad(app) {
-  let p = app.view({})
-  return p
-    .then((module) => {
-      queueJob(module.render, app.Berial)
-    })
-    .catch((e) => {
-      return app
-    })
-}
-
-function queueJob(queue, Berial) {
-  queue.forEach((item) => {
-    item(document.querySelector('berial-app').shadowRoot)
   })
 }
 
 window.addEventListener('hashchange', invoke)
 window.addEventListener('popstate', invoke)
+
+var defer = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : setTimeout

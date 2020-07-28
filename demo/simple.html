@@ -5,36 +5,27 @@
     <title>快速上手</title>
     <script src="../dist/berial.js"></script>
     <script>
-      function load(app) {
-        return (props) =>
-          new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve({
-                render: [app.render],
-              })
-            }, 1000)
-          })
-      }
-    </script>
-    <script>
       ;(async (global) => {
         const berial = global.berial
         const One = {
-          render: (host) => (host.innerHTML = '111'),
+          mount: (host) => (host.shadowRoot.innerHTML = '111'),
+          unmount:(host) => (host.shadowRoot.innerHTML = ''),
         }
 
         const Two = {
-          render: (host) => (host.innerHTML = '222'),
+          mount: (host) => (host.shadowRoot.innerHTML = '222'),
+          unmount:(host) => (host.shadowRoot.innerHTML = ''),
         }
 
-        berial.define(load(One), '#/app1')
-        berial.define(load(Two), '#/app2')
+        berial.define('one-app',One, '#/app1')
+        berial.define('two-app',Two, '#/app2')
       })(window)
     </script>
   </head>
   <body>
     <a href="#/app1">app1</a>
     <a href="#/app2">app2</a>
-    <berial-app></berial-app>
+    <one-app></one-app>
+    <two-app></two-app>
   </body>
 </html>
