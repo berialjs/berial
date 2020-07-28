@@ -1,28 +1,27 @@
 # berial
 
-micro frontend
+micro frontend framework
 
 ```js
-(async (global) => {
-  const berial = global.berial
+(async (ctx) => {
+  const { define, h } = ctx.berial
 
-  const One = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve({
-        render: (host) => (host.innerHTML = "111"),
-      })
-    }, 1000)
-  })
+  const One = {
+    count: 0, // props
+    render: h`<div>${count}</div>`,
+  }
 
-  const Two = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve({
-        render: (host) => (host.innerHTML = "222"),
-      })
-    }, 1000)
-  })
+  const Two = {
+    user: fetch(`https://api.clicli.me/user`),
+    render: h`<div>
+      ${h(
+        h`loading`, // sync html
+        user.then((res) => h`${res.name}`) // async html
+      )}
+    </div>`,
+  };
 
-  berial.define("one-app", One, "#/app1")
-  berial.define("two-app", Two, "#/app2")
+  define("one-app", One) 
+  define("two-app", Two, "#/app2") // route
 })(window)
 ```
