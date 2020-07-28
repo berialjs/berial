@@ -1,19 +1,25 @@
 # berial
 
-micro frontend
+micro frontend framework
 
 ```js
-((global) => {
-  const berial = global.berial
-  const One = {
-    render: (host) => (host.innerHTML = '111'),
+(async (ctx) => {
+  const { define } = ctx.berial
+
+  const React = {
+    render: host => ReactDOM.render(<App msg="react" />, host.shadowRoot)
   }
 
-  const Two = {
-    render: (host) => (host.innerHTML = '222'),
+  const Vue = {
+    render: host =>
+      new Vue({
+        el: host.name,
+        data: { msg: "vue" },
+        template: `<div>{{ msg }}</div>`,
+      }),
   }
 
-  berial.define(load(One), '#/app1')
-  berial.define(load(Two), '#/app2')
+  register("react-app", React, "#/app1")
+  register("vue-app", Vue, "#/app2")
 })(window)
 ```
