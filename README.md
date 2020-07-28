@@ -3,17 +3,28 @@
 micro frontend
 
 ```js
-((global) => {
+(async (global) => {
   const berial = global.berial
-  const One = {
-    render: (host) => (host.innerHTML = '111'),
-  }
 
-  const Two = {
-    render: (host) => (host.innerHTML = '222'),
-  }
+  const One = (props) =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({
+          render: [(host) => (host.innerHTML = "111")],
+        });
+      }, 1000)
+    })
 
-  berial.define(load(One), '#/app1')
-  berial.define(load(Two), '#/app2')
+  const Two = (props) =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({
+          render: [(host) => (host.innerHTML = "222")],
+        });
+      }, 1000)
+    })
+
+  berial.define("one-app", One, "#/app1")
+  berial.define("two-app", Two, "#/app2")
 })(window)
 ```
