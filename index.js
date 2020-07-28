@@ -2,7 +2,7 @@ const LOAD = 0
 
 let apps = []
 
-export function define(view, route) {
+export function define(tag, view, route) {
   class Berial extends HTMLElement {
     constructor() {
       super()
@@ -16,16 +16,16 @@ export function define(view, route) {
 
 
 
-  const hasDef = window.customElements.get('berial-app')
+  const hasDef = window.customElements.get(tag)
   if (!hasDef) {
-
-    customElements.define('berial-app', Berial)
+    customElements.define(tag, Berial)
   }
 
   apps.push({
+    tag,
     view,
     route,
-    Berial,
+    node: document.querySlector(tag),
   })
 
   return invoke()
@@ -48,16 +48,16 @@ function shouldLoad(app) {
   let p = app.view({})
   return p
     .then((module) => {
-      queueJob(module.render, app.Berial)
+      queueJob(module.render, app.node)
     })
     .catch((e) => {
       return app
     })
 }
 
-function queueJob(queue, Berial) {
+function queueJob(queue, node) {
   queue.forEach((item) => {
-    item(document.querySelector('berial-app').shadowRoot)
+    item(node.shadowRoot)
   })
 }
 
