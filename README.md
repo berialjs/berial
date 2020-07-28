@@ -8,15 +8,15 @@ micro frontend framework
 
   const One = {
     count: 0, // props
-    render: h`<div>${count}</div>`,
+    render: ({count}) => h`<div>${count}</div>`,
   }
 
   const Two = {
     user: fetch(`https://api.clicli.me/user`),
-    render: h`<div>
+    render: ({user}) => h`<div>
       ${h(
         h`loading`, // sync html
-        user.then((res) => h`${res.name}`) // async html
+        user.then(({name}) => h`${name}`) // async html
       )}
     </div>`,
   };
