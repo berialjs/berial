@@ -30,8 +30,6 @@ export function define(
         route,
         element: this
       })
-
-      invoke()
     }
   }
   const hasDef = window.customElements.get(tag)
@@ -40,7 +38,7 @@ export function define(
   }
 }
 
-function invoke() {
+export function start(){
   apps.forEach((app) => {
     const host = new Proxy(app.element, {
       get(target, key: string) {
