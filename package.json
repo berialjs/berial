@@ -2,8 +2,9 @@
   "name": "berial",
   "version": "0.0.0",
   "description": "micro frontend",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/umd/index.js",
+  "module": "dist/es/index.esm.js",
+  "types": "dist/es/index.d.ts",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
@@ -21,11 +22,36 @@
   },
   "homepage": "https://github.com/yisar/berial#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^10.12.24",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
+    "eslint": "^7.5.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-react": "^7.20.3",
+    "husky": "^3.0.9",
     "jest": "^24.1.0",
     "prettier": "^1.19.1",
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
+  },
+  "lint-staged": {
+    "*.{less,md,json}": [
+      "prettier --write"
+    ],
+    "*.ts?(x)": [
+      "npm run lint:fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run type && lint-staged"
+    }
   }
 }
