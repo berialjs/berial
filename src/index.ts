@@ -1,28 +1,34 @@
-let apps = []
+import { App } from './types'
+let apps: App[] = []
 
-export function define(tag, component, route) {
+export function define(
+  tag: string,
+  component: App['component'],
+  route: string
+) {
   class Berial extends HTMLElement {
-    static get name() {
+    static get componentName() {
       return tag
     }
 
     constructor() {
       super()
       for (const k in component) {
-        this[k] = component[k]
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(this as any)[k] = (component as any)[k]
       }
     }
 
     connectedCallback() {
       this.attachShadow({
-        mode: 'open',
+        mode: 'open'
       })
 
       apps.push({
         tag,
         component,
         route,
-        element: this,
+        element: this
       })
 
       invoke()
@@ -36,21 +42,21 @@ export function define(tag, component, route) {
 
 function invoke() {
   apps.forEach((app) => {
-      const host = new Proxy(app.element, {
-        get(target, key) {
-          return target[key]
-        },
-        set(target, key, val) {
-          target[key] = val
-          process(app, host)
-          return true
-        },
-      })
-      process(app,host)
+    const host = new Proxy(app.element, {
+      get(target, key: string) {
+        return target[key]
+      },
+      set(target, key: string, val) {
+        target[key] = val
+        process(app, host)
+        return true
+      }
     })
+    process(app, host)
+  })
 }
 
-function process(app, host) {
+function process(app: App, host: HTMLElement) {
   const path = window.location.hash || window.location.pathname || '/'
 
   if (app.route === path) {
