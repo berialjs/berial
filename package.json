@@ -8,6 +8,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
+    "lint": "eslint '{src,mock,config}/**/*.{ts,tsx}'",
+    "lint:fix": "eslint --fix '{src,mock,config}/**/*.{ts,tsx}'",
     "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
   },
   "repository": {
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/yisar/berial#readme",
   "devDependencies": {
+    "@rollup/plugin-replace": "^2.3.3",
     "@types/jest": "^24.0.18",
     "@types/node": "^10.12.24",
     "@types/react": "^16.8.0",
@@ -35,6 +38,7 @@
     "eslint-plugin-react": "^7.20.3",
     "husky": "^3.0.9",
     "jest": "^24.1.0",
+    "lint-staged": "^10.2.11",
     "prettier": "^1.19.1",
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
