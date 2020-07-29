@@ -4,7 +4,7 @@ micro frontend framework
 
 ```js
 (async (ctx) => {
-  const { define } = ctx.berial
+  const { register } = ctx.berial
 
   const React = {
     render: host => ReactDOM.render(<App msg="react" />, host.shadowRoot)
