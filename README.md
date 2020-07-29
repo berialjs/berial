@@ -4,7 +4,7 @@ micro frontend framework
 
 ```js
 (async (ctx) => {
-  const { register } = ctx.berial
+  const { register, start } = ctx.berial
 
   const React = {
     render: host => ReactDOM.render(<App msg="react" />, host.shadowRoot)
@@ -21,5 +21,6 @@ micro frontend framework
 
   register("react-app", React, "#/app1")
   register("vue-app", Vue, "#/app2")
+  start()
 })(window)
 ```
