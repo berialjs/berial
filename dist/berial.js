@@ -5,71 +5,80 @@
 }(this, (function (exports) { 'use strict';
 
   let apps = [];
-
-  function define(tag, component, route) {
-    class Berial extends HTMLElement {
-      static get name() {
-        return tag
+  function register(tag, component, route) {
+      class Berial extends HTMLElement {
+          static get componentName() {
+              return tag;
+          }
+          constructor() {
+              super();
+              for (const k in component) {
+                  this[k] = component[k];
+              }
+          }
+          connectedCallback() {
+              this.attachShadow({
+                  mode: 'open',
+              });
+              apps.push({
+                  tag,
+                  component,
+                  route,
+                  element: this,
+              });
+          }
       }
-
-      constructor() {
-        super();
-        for (const k in component) {
-          this[k] = component[k];
-        }
+      const hasDef = window.customElements.get(tag);
+      if (!hasDef) {
+          customElements.define(tag, Berial);
       }
-
-      connectedCallback() {
-        this.attachShadow({
-          mode: 'open',
-        });
-
-        apps.push({
-          tag,
-          component,
-          route,
-          element: this,
-        });
-
-        invoke();
-      }
-    }
-    const hasDef = window.customElements.get(tag);
-    if (!hasDef) {
-      customElements.define(tag, Berial);
-    }
   }
-
-  function invoke() {
-    apps.forEach((app) => {
-        const host = new Proxy(app.element, {
-          get(target, key) {
-            return target[key]
-          },
-          set(target, key, val) {
-            target[key] = val;
-            process(app, host);
-            return true
-          },
-        });
-        process(app,host);
+  function start() {
+      apps.forEach((app) => {
+          const host = new Proxy(app.element, {
+              get(target, key) {
+                  return target[key];
+              },
+              set(target, key, val) {
+                  target[key] = val;
+                  process(app, host);
+                  return true;
+              },
+          });
+          process(app, host);
       });
   }
-
   function process(app, host) {
-    const path = window.location.hash || window.location.pathname || '/';
-
-    if (app.route === path) {
-      app.component.mount(host);
-    } else {
-      app.component.unmount(host);
-    }
+      const path = window.location.hash || window.location.pathname || '/';
+      if (app.route === path) {
+          app.component.mount(host);
+      }
+      else {
+          app.component.unmount(host);
+      }
   }
+  class Sandbox {
+      constructor() {
+          const raw = window;
+          const fake = {};
+          const proxy = new Proxy(fake, {
+              get(target, key) {
+                  return target[key] || raw[key];
+              },
+              set(target, key, val) {
+                  target[key] = val;
+                  return true;
+              },
+          });
+          this.proxy = proxy;
+      }
+  }
+  window.addEventListener('hashchange', start);
+  window.addEventListener('popstate', start);
 
-  window.addEventListener('hashchange', invoke);
-  window.addEventListener('popstate', invoke);
-
-  exports.define = define;
+  exports.Sandbox = Sandbox;
+  exports.register = register;
+  exports.start = start;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

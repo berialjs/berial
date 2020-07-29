@@ -1,9 +1,9 @@
-import typescript from '@rollup/plugin-typescript'
+import typescript from 'rollup-plugin-typescript2'
 
 export default {
   input: 'src/index.ts',
   output: {
-    file: 'dist/index.js',
+    file: 'dist/berial.js',
     format: 'umd',
     sourcemap: true,
     name: 'berial'

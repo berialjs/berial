@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>快速上手</title>
+    <script src="../dist/berial.js"></script>
+    <script>
+      const box1 = new berial.Sandbox()
+      const box2 = new berial.Sandbox()
+      window.a = 0
+      ;((window) => {
+        window.a = 1
+        console.log(window.a) //1
+      })(box1.proxy)
+      ;((window) => {
+        window.a = 2
+        console.log(window.a) //2
+      })(box1.proxy)
+      console.log(window.a) //0
+    </script>
+  </head>
+  <body></body>
+</html>

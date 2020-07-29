@@ -1,7 +1,7 @@
 import { App } from './types'
-let apps: App[] = []
+let apps:any = []
 
-export function define(
+export function register(
   tag: string,
   component: App['component'],
   route: string
@@ -21,14 +21,14 @@ export function define(
 
     connectedCallback() {
       this.attachShadow({
-        mode: 'open'
+        mode: 'open',
       })
 
       apps.push({
         tag,
         component,
         route,
-        element: this
+        element: this,
       })
     }
   }
@@ -38,8 +38,8 @@ export function define(
   }
 }
 
-export function start(){
-  apps.forEach((app) => {
+export function start() {
+  apps.forEach((app:any) => {
     const host = new Proxy(app.element, {
       get(target, key: string) {
         return target[key]
@@ -48,7 +48,7 @@ export function start(){
         target[key] = val
         process(app, host)
         return true
-      }
+      },
     })
     process(app, host)
   })
@@ -64,5 +64,23 @@ function process(app: App, host: HTMLElement) {
   }
 }
 
-window.addEventListener('hashchange', invoke)
-window.addEventListener('popstate', invoke)
+export class Sandbox {
+  proxy:ProxyConstructor
+  constructor() {
+    const raw = window as any
+    const fake = {}
+    const proxy = new Proxy(fake, {
+      get(target: any, key: string) {
+        return target[key] || raw[key]
+      },
+      set(target, key, val) {
+        target[key] = val
+        return true
+      },
+    })
+    this.proxy = proxy
+  }
+}
+
+window.addEventListener('hashchange', start)
+window.addEventListener('popstate', start)

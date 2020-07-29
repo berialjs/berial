@@ -10,7 +10,6 @@
         const One = {
           count: 0,
           mount: (host) => {
-            console.log(host.count)
             host.shadowRoot.innerHTML = `<button>${host.count}</button>`
             host.shadowRoot.querySelector('button').onclick = () => host.count++
           },
@@ -22,8 +21,9 @@
           unmount: (host) => (host.shadowRoot.innerHTML = ''),
         }
 
-        berial.define('one-app', One, '#/app1')
-        berial.define('two-app', Two, '#/app2')
+        berial.register('one-app', One, '#/app1')
+        berial.register('two-app', Two, '#/app2')
+        berial.start()
       })(window)
     </script>
   </head>
