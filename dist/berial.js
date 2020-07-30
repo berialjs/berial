@@ -51,7 +51,9 @@
   function process(app, host) {
       const path = window.location.hash || window.location.pathname || '/';
       if (app.route === path) {
-          app.component.mount(host);
+          ((window) => {
+              app.component.mount(host);
+          })(new Sandbox().proxy);
       }
       else {
           app.component.unmount(host);
@@ -63,6 +65,7 @@
           const fake = {};
           const proxy = new Proxy(fake, {
               get(target, key) {
+                  console.log(target);
                   return target[key] || raw[key];
               },
               set(target, key, val) {

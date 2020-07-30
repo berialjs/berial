@@ -5,8 +5,6 @@
     <title>快速上手</title>
     <script src="../dist/berial.js"></script>
     <script>
-      ;(async (global) => {
-        const berial = global.berial
         const One = {
           count: 0,
           mount: (host) => {
@@ -24,7 +22,6 @@
         berial.register('one-app', One, '#/app1')
         berial.register('two-app', Two, '#/app2')
         berial.start()
-      })(window)
     </script>
   </head>
   <body>

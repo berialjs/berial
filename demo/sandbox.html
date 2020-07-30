@@ -13,9 +13,8 @@
         console.log(window.a) //1
       })(box1.proxy)
       ;((window) => {
-        window.a = 2
-        console.log(window.a) //2
-      })(box1.proxy)
+        console.log(window.a) //0
+      })(box2.proxy)
       console.log(window.a) //0
     </script>
   </head>
