@@ -1,11 +1,11 @@
 import { App } from './types'
-let apps:any = []
+let apps: App[] = []
 
 export function register(
   tag: string,
   component: App['component'],
   route: string
-) {
+): void {
   class Berial extends HTMLElement {
     static get componentName() {
       return tag
@@ -21,14 +21,14 @@ export function register(
 
     connectedCallback() {
       this.attachShadow({
-        mode: 'open',
+        mode: 'open'
       })
 
       apps.push({
         tag,
         component,
         route,
-        element: this,
+        element: this
       })
     }
   }
@@ -38,8 +38,8 @@ export function register(
   }
 }
 
-export function start() {
-  apps.forEach((app:any) => {
+export function start(): void {
+  apps.forEach((app) => {
     const host = new Proxy(app.element, {
       get(target, key: string) {
         return target[key]
@@ -48,7 +48,7 @@ export function start() {
         target[key] = val
         process(app, host)
         return true
-      },
+      }
     })
     process(app, host)
   })
@@ -68,7 +68,7 @@ function process(app: App, host: HTMLElement) {
 }
 
 export class Sandbox {
-  proxy:ProxyConstructor
+  proxy: ProxyConstructor
   constructor() {
     const raw = window as any
     const fake = {}
@@ -80,7 +80,7 @@ export class Sandbox {
       set(target, key, val) {
         target[key] = val
         return true
-      },
+      }
     })
     this.proxy = proxy
   }
