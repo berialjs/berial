@@ -27,6 +27,19 @@ export function register(
     // if the entry is a url , import html
   }
 
+  if (props) {
+    props = new Proxy(props, {
+      get(target, key: string) {
+        return target[key]
+      },
+      set(target, key: string, val) {
+        target[key] = val
+        reroute()
+        return true
+      }
+    })
+  }
+
   apps.push({
     name,
     entry,
