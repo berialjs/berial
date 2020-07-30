@@ -2,6 +2,7 @@ export type App = {
   name: string
   entry: any
   match: any
+  host: HTMLElement
   props: Record<string, unknown>
   status: string
   loaded?: any

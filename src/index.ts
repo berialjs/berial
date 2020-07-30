@@ -52,15 +52,15 @@ function reroute() {
     await Promise.all(loads.map(toLoadPromise))
   }
   async function perform() {
-    unmounts.map(toUnmountPromise)
+    unmounts.map(runUnmount)
     loads.map(async (app) => {
       app = await toLoadPromise(app)
-      app = await toBootstrapPromise(app)
-      return toMountPromise(app)
+      app = await runBootstrap(app)
+      return runMount(app)
     })
     mounts.map(async (app) => {
-      app = await toBootstrapPromise(app)
-      return toMountPromise(app)
+      app = await runBootstrap(app)
+      return runMount(app)
     })
   }
 }
@@ -101,17 +101,44 @@ async function toLoadPromise(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = LOADING
     let { bootstrap, mount, unmount } = await app.entry(app.props)
+    let host = await createShadow(app)
     app.status = NOT_BOOTSTRAPPED
     app.bootstrap = compose(bootstrap)
     app.mount = compose(mount)
     app.unmount = compose(unmount)
+    app.host = host as HTMLElement
     delete app.loaded
     return app
   })
   return app.loaded
 }
 
-async function toUnmountPromise(app: App) {
+async function createShadow(app: App) {
+  return new Promise((resolve, reject) => {
+    try {
+      class Berial extends HTMLElement {
+        static get componentName() {
+          return app.name
+        }
+        connectedCallback() {
+          this.attachShadow({ mode: 'open' })
+          resolve(this)
+        }
+        constructor() {
+          super()
+        }
+      }
+      const hasDef = window.customElements.get(app.name)
+      if (!hasDef) {
+        customElements.define(app.name, Berial)
+      }
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
+async function runUnmount(app: App) {
   if (app.status != MOUNTED) {
     return app
   }
@@ -121,7 +148,7 @@ async function toUnmountPromise(app: App) {
   return app
 }
 
-async function toBootstrapPromise(app: App) {
+async function runBootstrap(app: App) {
   if (app.status !== NOT_BOOTSTRAPPED) {
     return app
   }
@@ -131,7 +158,7 @@ async function toBootstrapPromise(app: App) {
   return app
 }
 
-async function toMountPromise(app: App) {
+async function runMount(app: App) {
   if (app.status !== NOT_MOUNTED) {
     return app
   }
