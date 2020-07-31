@@ -12,4 +12,6 @@ export type App = {
   bootstrap: any
 }
 
+export type PromiseFn = (...args: any[]) => Promise<any>
+
 export type ArrayType<T> = T extends (infer U)[] ? U : T

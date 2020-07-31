@@ -15,6 +15,6 @@
     "baseUrl": ".",
     "outDir": "./dist"
   },
-  "include": ["./src/**/*", "./types"],
+  "include": ["src/**/*", "types"],
   "exclude": ["**/__tests__", "node_modules"]
 }

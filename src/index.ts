@@ -58,7 +58,7 @@ function reroute() {
     return init()
   }
   async function init() {
-    await Promise.all(loads.map(toLoadPromise))
+    await Promise.all(loads.map(runLoad))
   }
   async function perform() {
     unmounts.map(runUnmount)
@@ -97,7 +97,7 @@ function getAppChanges() {
   return { unmounts, loads, mounts }
 }
 
-function compose(fns: any[]) {
+function compose(fns: ((props: any) => Promise<any>)[]) {
   fns = Array.isArray(fns) ? fns : [fns]
   return (props: any) =>
     fns.reduce((p, fn) => p.then(() => fn(props)), Promise.resolve())
@@ -110,7 +110,7 @@ async function runLoad(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = LOADING
     let lifecycle = null
-    if (typeof app.load === 'string'){
+    if (typeof app.load === 'string') {
       // import html
     } else {
       lifecycle = await app.load(app.props)
