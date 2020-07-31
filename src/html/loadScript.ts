@@ -1,36 +1,39 @@
 import parseScript from './parseScript'
 import runScript from './runScript'
+import { fetchURL } from '../utils/fetch'
+import { PromiseFn } from '../types'
 
-async function loadScript(htmlEntry: string, global: WindowProxy = window) {
-  const { scriptUrls, scripts } = parseScript(htmlEntry)
-  const fetchPromises = scriptUrls.map((url) =>
-    fetch(url, {
-      mode: 'cors'
-    })
+interface ScriptExports {
+  bootstrap: PromiseFn[]
+  mount: PromiseFn[]
+  unmount: PromiseFn[]
+  update: PromiseFn[]
+}
+
+async function loadScript(
+  template: string,
+  global: WindowProxy = window
+): Promise<ScriptExports> {
+  const { scriptURLs, scripts } = parseScript(template)
+  const fetchedScripts = await Promise.all(
+    scriptURLs.map((url) => fetchURL(url))
   )
-  const scriptsFromUrls = await Promise.all(fetchPromises).then((responses) => {
-    let script: string[] = []
-    responses.map((res) =>
-      res.text().then((res) => (script = [...script, res]))
-    )
-    return script
-  })
+  const scriptsToLoad = fetchedScripts.concat(scripts)
 
-  const scriptsToLoad = scriptsFromUrls.concat(scripts)
-
-  let bootstrap: Promise<void>[] = [],
-    unmount: Promise<void>[] = [],
-    mount: Promise<void>[] = []
+  let bootstrap: PromiseFn[] = [],
+    unmount: PromiseFn[] = [],
+    mount: PromiseFn[] = [],
+    update: PromiseFn[] = []
 
   scriptsToLoad.forEach((script) => {
     const lifecycles = runScript(script, global)
-
     bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
+    update = [...update, lifecycles.update]
   })
 
-  return { bootstrap, unmount, mount }
+  return { bootstrap, unmount, mount, update }
 }
 
 export default loadScript

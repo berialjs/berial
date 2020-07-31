@@ -456,26 +456,6 @@
   resolved "http://bnpm.byted.org/@types/parse-json/download/@types/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
   integrity sha1-L4u0QUNNFjs1+4/9zNcTiSf/uMA=
 
-"@types/prop-types@*":
-  version "15.7.3"
-  resolved "http://bnpm.byted.org/@types/prop-types/download/@types/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
-  integrity sha1-KrDV2i5YFflLC51LldHl8kOrLKc=
-
-"@types/react-dom@^16.8.0":
-  version "16.9.8"
-  resolved "http://bnpm.byted.org/@types/react-dom/download/@types/react-dom-16.9.8.tgz#fe4c1e11dfc67155733dfa6aa65108b4971cb423"
-  integrity sha1-/kweEd/GcVVzPfpqplEItJcctCM=
-  dependencies:
-    "@types/react" "*"
-
-"@types/react@*", "@types/react@^16.8.0":
-  version "16.9.43"
-  resolved "http://bnpm.byted.org/@types/react/download/@types/react-16.9.43.tgz#c287f23f6189666ee3bebc2eb8d0f84bcb6cdb6b"
-  integrity sha1-wofyP2GJZm7jvrwuuND4S8ts22s=
-  dependencies:
-    "@types/prop-types" "*"
-    csstype "^2.2.0"
-
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
   resolved "http://bnpm.byted.org/@types/stack-utils/download/@types/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
@@ -1142,11 +1122,6 @@ cssstyle@^1.0.0:
   dependencies:
     cssom "0.3.x"
 
-csstype@^2.2.0:
-  version "2.6.11"
-  resolved "http://bnpm.byted.org/csstype/download/csstype-2.6.11.tgz#452f4d024149ecf260a852b025e36562a253ffc5"
-  integrity sha1-RS9NAkFJ7PJgqFKwJeNlYqJT/8U=
-
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "http://bnpm.byted.org/dashdash/download/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
@@ -1351,11 +1326,6 @@ eslint-config-prettier@^6.11.0:
   dependencies:
     get-stdin "^6.0.0"
 
-eslint-config-react@^1.1.7:
-  version "1.1.7"
-  resolved "http://bnpm.byted.org/eslint-config-react/download/eslint-config-react-1.1.7.tgz#a0918d0fc47d0e9bd161a47308021da85d2585b3"
-  integrity sha1-oJGND8R9DpvRYaRzCAIdqF0lhbM=
-
 eslint-plugin-prettier@^3.1.4:
   version "3.1.4"
   resolved "http://bnpm.byted.org/eslint-plugin-prettier/download/eslint-plugin-prettier-3.1.4.tgz#168ab43154e2ea57db992a2cd097c828171f75c2"
@@ -1363,10 +1333,10 @@ eslint-plugin-prettier@^3.1.4:
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
-eslint-plugin-react@^7.20.3:
-  version "7.20.4"
-  resolved "http://bnpm.byted.org/eslint-plugin-react/download/eslint-plugin-react-7.20.4.tgz#c14d2631221ec694ddd84557d7152f44b66e4aa0"
-  integrity sha1-wU0mMSIexpTd2EVX1xUvRLZuSqA=
+eslint-plugin-react@^7.20.5:
+  version "7.20.5"
+  resolved "http://bnpm.byted.org/eslint-plugin-react/download/eslint-plugin-react-7.20.5.tgz#29480f3071f64a04b2c3d99d9b460ce0f76fb857"
+  integrity sha1-KUgPMHH2SgSyw9mdm0YM4PdvuFc=
   dependencies:
     array-includes "^3.1.1"
     array.prototype.flatmap "^1.2.3"

@@ -12,22 +12,22 @@ const SCRIPT_CONTENT_RE = new RegExp(
   'g'
 )
 
-function parseScript(html: string) {
-  const scriptUrls: string[] = []
+function parseScript(template: string) {
+  const scriptURLs: string[] = []
   const scripts: string[] = []
   let match
-  while ((match = SCRIPT_URL_RE.exec(html))) {
+  while ((match = SCRIPT_URL_RE.exec(template))) {
     const captured = match[1].trim()
     if (!captured) continue
-    scriptUrls.push(captured)
+    scriptURLs.push(captured)
   }
-  while ((match = SCRIPT_CONTENT_RE.exec(html))) {
+  while ((match = SCRIPT_CONTENT_RE.exec(template))) {
     const captured = match[1].trim()
     if (!captured) continue
     scripts.push(captured)
   }
   return {
-    scriptUrls,
+    scriptURLs,
     scripts
   }
 }
