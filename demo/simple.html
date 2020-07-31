@@ -2,32 +2,63 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>快速上手</title>
-    <script src="../dist/umd/index.js"></script>
-    <script>
-        const One = {
-          count: 0,
-          mount: (host) => {
-            host.shadowRoot.innerHTML = `<button>${host.count}</button>`
-            host.shadowRoot.querySelector('button').onclick = () => host.count++
-          },
-          unmount: (host) => (host.shadowRoot.innerHTML = ''),
-        }
-
-        const Two = {
-          mount: (host) => (host.shadowRoot.innerHTML = '222'),
-          unmount: (host) => (host.shadowRoot.innerHTML = ''),
-        }
-
-        berial.register('one-app', One, '#/app1')
-        berial.register('two-app', Two, '#/app2')
-        berial.start()
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
   </head>
+
   <body>
-    <a href="#/app1">app1</a>
-    <a href="#/app2">app2</a>
+    <a onclick="a()">应用1</a>
+    <a onclick="b()">应用2</a>
     <one-app></one-app>
     <two-app></two-app>
+    <script src="/dist/berial.js"></script>
+    <script>
+      function a() {
+        history.pushState({}, '', '/a')
+      }
+      function b() {
+        history.pushState({}, '', '/b')
+      }
+      berial.register(
+        'one-app',
+        async (props) => {
+          return {
+            bootstrap: [
+              async (props) => {
+                console.log('bootstrap1')
+              }
+            ],
+            mount: async (props) => {
+              console.log('mount1')
+            },
+            unmount: async (props) => {
+              console.log('unmount1')
+            }
+          }
+        },
+        (location) => location.pathname.startsWith('/a'), // 根据路径来判断是否应该加载
+        { store: { name: 'zf', age: 10 } }
+      )
+      berial.register(
+        'two-app',
+        async (props) => {
+          console.log('加载时执行2')
+          return {
+            bootstrap: async (props) => {
+              console.log('bootstrap2')
+            },
+            mount: async (props) => {
+              console.log('mount2')
+            },
+            unmount: async (props) => {
+              console.log('unmount2')
+            }
+          }
+        },
+        (location) => location.pathname.startsWith('/b'),
+        { store: { name: 'zf', age: 10 } }
+      )
+      berial.start()
+    </script>
   </body>
 </html>
