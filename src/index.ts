@@ -14,17 +14,13 @@ const apps: App[] = []
 
 export function register(
   name: string,
-  entry: string,
+  load: string,
   match: any,
   props: Record<string, unknown>
 ) {
   if (typeof match === 'string') {
     match = (location: Window['location']) =>
       location.pathname.startsWith(match)
-  }
-
-  if (typeof entry === 'string') {
-    // if the entry is a url , import html
   }
 
   if (props) {
@@ -42,7 +38,7 @@ export function register(
 
   apps.push({
     name,
-    entry,
+    load,
     match,
     props,
     status: NOT_LOADED
@@ -67,7 +63,7 @@ function reroute() {
   async function perform() {
     unmounts.map(runUnmount)
     loads.map(async (app) => {
-      app = await toLoadPromise(app)
+      app = await runLoad(app)
       app = await runBootstrap(app)
       return runMount(app)
     })
@@ -107,18 +103,23 @@ function compose(fns: any[]) {
     fns.reduce((p, fn) => p.then(() => fn(props)), Promise.resolve())
 }
 
-async function toLoadPromise(app: App) {
+async function runLoad(app: App) {
   if (app.loaded) {
     return app.loaded
   }
   app.loaded = Promise.resolve().then(async () => {
     app.status = LOADING
-    let { bootstrap, mount, unmount } = await app.entry(app.props)
+    let lifecycle = null
+    if (typeof app.load === 'string'){
+      // import html
+    } else {
+      lifecycle = await app.load(app.props)
+    }
     let host = await createShadow(app)
     app.status = NOT_BOOTSTRAPPED
-    app.bootstrap = compose(bootstrap)
-    app.mount = compose(mount)
-    app.unmount = compose(unmount)
+    app.bootstrap = compose(lifecycle.bootstrap)
+    app.mount = compose(lifecycle.mount)
+    app.unmount = compose(lifecycle.unmount)
     app.host = host as HTMLElement
     delete app.loaded
     return app
