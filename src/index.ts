@@ -14,7 +14,7 @@ const apps: App[] = []
 
 export function register(
   name: string,
-  load: string,
+  loadLifecycle: string,
   match: any,
   props: Record<string, unknown>
 ) {
@@ -23,22 +23,9 @@ export function register(
       location.pathname.startsWith(match)
   }
 
-  if (props) {
-    props = new Proxy(props, {
-      get(target, key: string) {
-        return target[key]
-      },
-      set(target, key: string, val) {
-        target[key] = val
-        reroute()
-        return true
-      }
-    })
-  }
-
   apps.push({
     name,
-    load,
+    loadLifecycle,
     match,
     props,
     status: NOT_LOADED
@@ -110,10 +97,10 @@ async function runLoad(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = LOADING
     let lifecycle = null
-    if (typeof app.load === 'string') {
+    if (typeof app.loadLifecycle === 'string') {
       // import html
     } else {
-      lifecycle = await app.load(app.props)
+      lifecycle = await app.loadLifecycle(app.props)
     }
     let host = await createShadow(app)
     app.status = NOT_BOOTSTRAPPED
