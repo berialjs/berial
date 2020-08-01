@@ -8,6 +8,8 @@ export async function loadSandbox(host: any) {
     const proxy = new Proxy(iframe.contentWindow, {
       get(target: any, key: string) {
         switch (key) {
+          case 'document':
+            return host.shadowRoot
           case 'globalStore':
             return getGlobalStore()
           default:
