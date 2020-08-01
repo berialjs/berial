@@ -123,7 +123,7 @@ async function runLoad(app: App) {
     app.mount = compose(lifecycle.mount)
     app.unmount = compose(lifecycle.unmount)
     app.update = compose(lifecycle.update)
-    app.host = host as HTMLElement
+    app.host = host as Element
     delete app.loaded
     return app
   })
