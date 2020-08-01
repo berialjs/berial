@@ -140,7 +140,6 @@ async function loadShadowDOM(
         return app.name
       }
       connectedCallback() {
-        this.attachShadow({ mode: 'open' })
         for (const k of styles) {
           this.shadowRoot?.appendChild(k)
         }
@@ -148,6 +147,7 @@ async function loadShadowDOM(
       }
       constructor() {
         super()
+        this.attachShadow({ mode: 'open' })
         this.shadowRoot?.appendChild(body)
       }
     }
