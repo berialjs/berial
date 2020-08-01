@@ -85,12 +85,12 @@ function runScript(script: string, global: ProxyConstructor) {
     update: PromiseFn
 
   eval(`(function(window) { 
-      ${script};
-      bootstrap = window.bootstrap;
-      mount = window.mount;
-      unmount = window.unmount;
-      update = window.update;
-  })(${global})`)
+    ${script};
+    bootstrap = window.bootstrap;
+    mount = window.mount;
+    unmount = window.unmount;
+    update = window.update;
+}).bind(global)(global)`)
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }

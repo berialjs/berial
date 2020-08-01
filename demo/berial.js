@@ -285,7 +285,7 @@
         return __awaiter(this, void 0, void 0, function* () {
             const template = yield request(url);
             const proxyWindow = new Sandbox();
-            return yield loadScript(template);
+            return yield loadScript(template, proxyWindow.proxy);
         });
     }
     function loadScript(template, global) {
@@ -295,7 +295,7 @@
             const scriptsToLoad = fetchedScripts.concat(scripts);
             let bootstrap = [], unmount = [], mount = [], update = [];
             scriptsToLoad.forEach((script) => {
-                const lifecycles = runScript(script);
+                const lifecycles = runScript(script, global);
                 bootstrap = [...bootstrap, lifecycles.bootstrap];
                 mount = [...mount, lifecycles.mount];
                 unmount = [...unmount, lifecycles.unmount];
@@ -326,14 +326,15 @@
         };
     }
     function runScript(script, global) {
+        console.log(global)
         let bootstrap, mount, unmount, update;
         eval(`(function(window) { 
-    ${script};
-    bootstrap = window.bootstrap;
-    mount = window.mount;
-    unmount = window.unmount;
-    update = window.update;
-}).bind(global)(global)`);
+      ${script};
+      bootstrap = window.app.bootstrap;
+      mount = window.app.mount;
+      unmount = window.app.unmount;
+      update = window.app.update;
+  }).bind(global)(global)`);
         // @ts-ignore
         return { bootstrap, mount, unmount, update };
     }
