@@ -1,10 +1,12 @@
+import { Status } from './app'
+
 export type App = {
   name: string
   entry: any
   match: any
   host: HTMLElement
   props: Record<string, unknown>
-  status: string
+  status: Status
   loaded?: any
   unmount: any
   mount: any

@@ -1,14 +1,16 @@
 import { App } from './types'
 import { importHtml } from './html-loader'
 
-const NOT_LOADED = 'NOT_LOADED'
-const LOADING = 'LOADING'
-const NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED'
-const BOOTSTRAPPING = 'BOOTSTRAPPING'
-const NOT_MOUNTED = 'NOT_MOUNTED'
-const MOUNTING = 'MOUNTING'
-const MOUNTED = 'MOUNTED'
-const UNMOUNTING = 'UNMOUNTING'
+export enum Status {
+  NOT_LOADED = 'NOT_LOADED',
+  LOADING = 'LOADING',
+  NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED',
+  BOOTSTRAPPING = 'BOOTSTRAPPING',
+  NOT_MOUNTED = 'NOT_MOUNTED',
+  MOUNTING = 'MOUNTING',
+  MOUNTED = 'MOUNTED',
+  UNMOUNTING = 'UNMOUNTING'
+}
 
 let started = false
 const apps: App[] = []
@@ -26,7 +28,7 @@ export function register(
     entry,
     match,
     props,
-    status: NOT_LOADED
+    status: Status.NOT_LOADED
   } as App)
 }
 
@@ -66,16 +68,16 @@ function getAppChanges() {
   apps.forEach((app) => {
     const isActive = app.match(window.location)
     switch (app.status) {
-      case NOT_LOADED:
-      case LOADING:
+      case Status.NOT_LOADED:
+      case Status.LOADING:
         isActive && loads.push(app)
         break
-      case NOT_BOOTSTRAPPED:
-      case BOOTSTRAPPING:
-      case NOT_MOUNTED:
+      case Status.NOT_BOOTSTRAPPED:
+      case Status.BOOTSTRAPPING:
+      case Status.NOT_MOUNTED:
         isActive && mounts.push(app)
         break
-      case MOUNTED:
+      case Status.MOUNTED:
         !isActive && unmounts.push(app)
     }
   })
@@ -93,7 +95,7 @@ async function runLoad(app: App) {
     return app.loaded
   }
   app.loaded = Promise.resolve().then(async () => {
-    app.status = LOADING
+    app.status = Status.LOADING
     let lifecycle = null
     if (typeof app.entry === 'string') {
       lifecycle = await importHtml(app)
@@ -101,7 +103,7 @@ async function runLoad(app: App) {
       lifecycle = await app.entry(app.props)
     }
     let host = await loadShadow(app)
-    app.status = NOT_BOOTSTRAPPED
+    app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
     app.unmount = compose(lifecycle.unmount)
@@ -139,32 +141,32 @@ async function loadShadow(app: App) {
 }
 
 async function runUnmount(app: App) {
-  if (app.status != MOUNTED) {
+  if (app.status != Status.MOUNTED) {
     return app
   }
-  app.status = UNMOUNTING
+  app.status = Status.UNMOUNTING
   await app.unmount(app.props)
-  app.status = NOT_MOUNTED
+  app.status = Status.NOT_MOUNTED
   return app
 }
 
 async function runBootstrap(app: App) {
-  if (app.status !== NOT_BOOTSTRAPPED) {
+  if (app.status !== Status.NOT_BOOTSTRAPPED) {
     return app
   }
-  app.status = BOOTSTRAPPING
+  app.status = Status.BOOTSTRAPPING
   await app.bootstrap(app.props)
-  app.status = NOT_MOUNTED
+  app.status = Status.NOT_MOUNTED
   return app
 }
 
 async function runMount(app: App) {
-  if (app.status !== NOT_MOUNTED) {
+  if (app.status !== Status.NOT_MOUNTED) {
     return app
   }
-  app.status = MOUNTING
+  app.status = Status.MOUNTING
   await app.mount(app.props)
-  app.status = MOUNTED
+  app.status = Status.MOUNTED
   return app
 }
 
@@ -207,7 +209,7 @@ window.removeEventListener = function(name: any, fn: any, ...args: any) {
 function patchedUpdateState(updateState: any, ...args: any) {
   return function() {
     const urlBefore = window.location.href
-    //@ts-ignore
+    // @ts-ignore
     updateState.apply(this, args)
     const urlAfter = window.location.href
 
