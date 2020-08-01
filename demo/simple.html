@@ -7,18 +7,12 @@
   </head>
 
   <body>
-    <a onclick="a()">应用1</a>
-    <a onclick="b()">应用2</a>
+    <a href="#/app1">应用1</a>
+    <a href="#/app2">应用2</a>
     <one-app></one-app>
     <two-app></two-app>
     <script src="../dist/berial.js"></script>
     <script>
-      function a() {
-        history.pushState({}, '', '/a')
-      }
-      function b() {
-        history.pushState({}, '', '/b')
-      }
       berial.register(
         'one-app',
         async (props) => {
@@ -36,8 +30,7 @@
             }
           }
         },
-        (location) => location.pathname.startsWith('/a'), // 根据路径来判断是否应该加载
-        { store: { name: 'zf', age: 10 } }
+        (location) => location.hash==='#/app1',
       )
       berial.register(
         'two-app',
@@ -55,8 +48,7 @@
             }
           }
         },
-        (location) => location.pathname.startsWith('/b'),
-        { store: { name: 'zf', age: 10 } }
+        (location) => location.hash === '#/app2',
       )
       berial.start()
     </script>
