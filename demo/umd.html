@@ -11,11 +11,11 @@
         root.app = factory()
       })(window, function() {
         return {
-          bootstrap: async (props) => {
+          bootstrap: async () => {
             console.log('bootstrap2')
           },
-          mount: async (props) => {
-            console.log('mount2')
+          mount: async (host) => {
+            React.render(<App/>,host.shadowRoot)
           },
           unmount: async (props) => {
             console.log('unmount2')

@@ -1,7 +1,7 @@
 import { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { reactiveStore } from './store'
-import { appendChildren, lifecycleCheck } from './util'
+import { lifecycleCheck } from './util'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -113,18 +113,10 @@ async function runLoad(app: App) {
       styleNodes = exports.styleNodes
     } else {
       // TODO: 增加 bodyNode, styleNodes, loadScript
-      const exportedLifecycles = await app.entry(app.props)
-      lifecycleCheck(exportedLifecycles)
-
-      const { bootstrap, mount, unmount, update } = exportedLifecycles
-      lifecycle = {} as Lifecycles
-      lifecycle.bootstrap = bootstrap ? [bootstrap] : []
-      lifecycle.mount = mount ? [mount] : []
-      lifecycle.unmount = unmount ? [unmount] : []
-      lifecycle.update = update ? [update] : []
+      lifecycle = (await app.entry(app.props)) as any
+      lifecycleCheck(lifecycle)
     }
-    let host = await loadShadow(app)
-    appendChildren(host.shadowRoot!, [...styleNodes!, bodyNode!])
+    let host = await loadShadowDOM(app, bodyNode!, styleNodes!)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
@@ -137,27 +129,31 @@ async function runLoad(app: App) {
   return app.loaded
 }
 
-async function loadShadow(app: App) {
-  return new Promise<HTMLElement>((resolve, reject) => {
-    try {
-      class Berial extends HTMLElement {
-        static get componentName() {
-          return app.name
-        }
-        connectedCallback() {
-          this.attachShadow({ mode: 'open' })
-          resolve(this)
-        }
-        constructor() {
-          super()
-        }
+async function loadShadowDOM(
+  app: App,
+  body: HTMLElement,
+  styles: HTMLElement[]
+) {
+  return new Promise<HTMLElement>((resolve) => {
+    class Berial extends HTMLElement {
+      static get componentName() {
+        return app.name
       }
-      const hasDef = window.customElements.get(app.name)
-      if (!hasDef) {
-        customElements.define(app.name, Berial)
+      connectedCallback() {
+        for (const k of styles) {
+          this.shadowRoot?.appendChild(k)
+        }
+        resolve(this)
       }
-    } catch (e) {
-      reject(e)
+      constructor() {
+        super()
+        this.attachShadow({ mode: 'open' })
+        this.shadowRoot?.appendChild(body)
+      }
+    }
+    const hasDef = window.customElements.get(app.name)
+    if (!hasDef) {
+      customElements.define(app.name, Berial)
     }
   })
 }
@@ -197,7 +193,7 @@ const routingEventsListeningTo = ['hashchange', 'popstate']
 function urlReroute() {
   reroute()
 }
-const capturedEventListeners = {
+const capturedEvents = {
   hashchange: [],
   popstate: []
 } as any
@@ -206,22 +202,20 @@ window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
-window.addEventListener = function (name: any, fn: any, ...args: any) {
+window.addEventListener = function(name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
-    !capturedEventListeners[name].some((l: any) => l == fn)
+    !capturedEvents[name].some((l: any) => l == fn)
   ) {
-    capturedEventListeners[name].push(fn)
+    capturedEvents[name].push(fn)
     return
   }
   // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
-window.removeEventListener = function (name: any, fn: any, ...args: any) {
+window.removeEventListener = function(name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
-    capturedEventListeners[name] = capturedEventListeners[name].filter(
-      (l: any) => l !== fn
-    )
+    capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
     return
   }
   //@ts-ignore
@@ -229,7 +223,7 @@ window.removeEventListener = function (name: any, fn: any, ...args: any) {
 }
 
 function patchedUpdateState(updateState: any, ...args: any) {
-  return function () {
+  return function() {
     const urlBefore = window.location.href
     // @ts-ignore
     updateState.apply(this, args)

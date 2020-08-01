@@ -29,14 +29,6 @@ export function request(url: string, option?: RequestInit) {
   }).then((res) => res.text())
 }
 
-export function defineProperty(
-  target: any,
-  key: PropertyKey,
-  descriptor: PropertyDescriptor
-) {
-  Object.defineProperty(target, key, descriptor)
-}
-
 export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
   const definedLifecycles = new Map<any, boolean>()
   for (const item in lifecycle) {
@@ -59,14 +51,5 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
       __DEV__,
       `It looks like that you didn't export the lifecycle hook [unmount], which would cause a mistake.`
     )
-  }
-}
-
-export function appendChildren<T extends HTMLElement | ShadowRoot>(
-  element: T,
-  children: Element[]
-) {
-  for (const child of children) {
-    element.appendChild(child)
   }
 }
