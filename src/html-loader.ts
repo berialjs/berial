@@ -92,7 +92,7 @@ function runScript(script: string, global: ProxyConstructor, umdName: string) {
     mount = window[${umdName}].mount;
     unmount = window[${umdName}].unmount;
     update = window[${umdName}].update;
-}).bind(global)(global)`)
+  }).bind(global)(global)`)
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }

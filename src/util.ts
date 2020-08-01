@@ -26,3 +26,11 @@ export function request(url: string, option?: RequestInit) {
     .then((res) => res.text())
     .then((data) => data)
 }
+
+export function defineProperty(
+  target: object,
+  key: PropertyKey,
+  descriptor: PropertyDescriptor
+) {
+  Object.defineProperty(target, key, descriptor)
+}

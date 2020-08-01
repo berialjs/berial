@@ -1,5 +1,8 @@
+import { defineProperty } from './util'
+
 export async function loadSandbox(host: any) {
   const rawWindow = window as any
+  patchShadowDOM(host.shadowRoot)
   return new Promise(async (resolve) => {
     const iframe = (await loadIframe()) as any
     const proxy = new Proxy(iframe.contentWindow, {
@@ -28,5 +31,17 @@ async function loadIframe() {
 
     document.body.append(iframe)
     iframe.onload = () => resolve(iframe)
+  })
+}
+
+function patchShadowDOM(host: any) {
+  let title: string
+  defineProperty(host.shadowRoot, 'title', {
+    get() {
+      return title || document.title
+    },
+    set(value) {
+      title = value
+    }
   })
 }
