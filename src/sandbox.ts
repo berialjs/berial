@@ -1,11 +1,8 @@
-export class Sandbox {
-  proxy: ProxyConstructor
-  avtiving: boolean
-  constructor() {
-    this.avtiving = false
-    const rawWindow = window as any
-    const fakeWindow = {} // to be frame.currentWindow
-    const proxy = new Proxy(fakeWindow, {
+export async function loadSandbox() {
+  const rawWindow = window as any
+  return new Promise(async (resolve) => {
+    const iframe = (await loadIframe()) as any
+    const proxy = new Proxy(iframe.contentWindow, {
       get(target: any, key: string) {
         return target[key] || rawWindow[key]
       },
@@ -14,12 +11,17 @@ export class Sandbox {
         return true
       }
     })
-    this.proxy = proxy
-  }
-  active() {
-    this.avtiving = true
-  }
-  inactive() {
-    this.avtiving = false
-  }
+    resolve(proxy)
+  })
+}
+
+async function loadIframe() {
+  return new Promise((resolve) => {
+    const iframe = document.createElement('iframe') as any
+    iframe.style.cssText =
+      'position: absolute; top: -20000px; width: 1px; height: 1px;'
+
+    document.body.append(iframe)
+    iframe.onload = () => resolve(iframe)
+  })
 }

@@ -45,28 +45,34 @@
             .then((data) => data);
     }
 
-    class Sandbox {
-        constructor() {
-            this.avtiving = false;
+    function loadSandbox() {
+        return __awaiter(this, void 0, void 0, function* () {
             const rawWindow = window;
-            const fakeWindow = {}; // to be frame.currentWindow
-            const proxy = new Proxy(fakeWindow, {
-                get(target, key) {
-                    return target[key] || rawWindow[key];
-                },
-                set(target, key, val) {
-                    target[key] = val;
-                    return true;
-                }
+            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+                const iframe = yield loadIframe();
+                const proxy = new Proxy(iframe.contentWindow, {
+                    get(target, key) {
+                        return target[key] || rawWindow[key];
+                    },
+                    set(target, key, val) {
+                        target[key] = val;
+                        return true;
+                    }
+                });
+                resolve(proxy);
+            }));
+        });
+    }
+    function loadIframe() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.style.cssText =
+                    'position: absolute; top: -20000px; width: 1px; height: 1px;';
+                document.body.append(iframe);
+                iframe.onload = () => resolve(iframe);
             });
-            this.proxy = proxy;
-        }
-        active() {
-            this.avtiving = true;
-        }
-        inactive() {
-            this.avtiving = false;
-        }
+        });
     }
 
     const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
@@ -79,8 +85,8 @@
     function importHtml(url, name) {
         return __awaiter(this, void 0, void 0, function* () {
             const template = yield request(url);
-            const proxyWindow = new Sandbox();
-            return yield loadScript(template, proxyWindow.proxy, name);
+            const proxy = (yield loadSandbox());
+            return yield loadScript(template, proxy, name);
         });
     }
     function loadScript(template, global, name) {
@@ -224,11 +230,12 @@
                 else {
                     lifecycle = yield app.entry(app.props);
                 }
-                let host = yield createShadow(app);
+                let host = yield loadShadow(app);
                 app.status = NOT_BOOTSTRAPPED;
                 app.bootstrap = compose(lifecycle.bootstrap);
                 app.mount = compose(lifecycle.mount);
                 app.unmount = compose(lifecycle.unmount);
+                app.update = compose(lifecycle.update);
                 app.host = host;
                 delete app.loaded;
                 return app;
@@ -236,7 +243,7 @@
             return app.loaded;
         });
     }
-    function createShadow(app) {
+    function loadShadow(app) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
                 try {
@@ -340,8 +347,8 @@
     window.history.pushState = patchedUpdateState(window.history.pushState);
     window.history.replaceState = patchedUpdateState(window.history.replaceState);
 
-    exports.Sandbox = Sandbox;
     exports.importHtml = importHtml;
+    exports.loadSandbox = loadSandbox;
     exports.loadScript = loadScript;
     exports.register = register;
     exports.start = start;
