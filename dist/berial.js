@@ -44,18 +44,35 @@
             .then((res) => res.text())
             .then((data) => data);
     }
+    function lifecycleCheck(lifecycle) {
+        const definedLifecycles = new Map();
+        for (const item in lifecycle) {
+            definedLifecycles.set(item, true);
+        }
+        if (!definedLifecycles.has('bootstrap')) {
+            error(true, `It looks like that you didn't export the lifecycle hook [bootstrap], which would cause a mistake.`);
+        }
+        if (!definedLifecycles.has('mount')) {
+            error(true, `It looks like that you didn't export the lifecycle hook [mount], which would cause a big mistake.`);
+        }
+        if (!definedLifecycles.has('unmount')) {
+            error(true, `It looks like that you didn't export the lifecycle hook [unmount], which would cause a mistake.`);
+        }
+    }
 
     function loadSandbox(host) {
         return __awaiter(this, void 0, void 0, function* () {
             const rawWindow = window;
-            patchShadowDOM(host.shadowRoot);
+            const shadowRoot = patchShadowDOM(host.shadowRoot);
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
                 const iframe = (yield loadIframe());
                 const proxy = new Proxy(iframe.contentWindow, {
                     get(target, key) {
                         switch (key) {
                             case 'document':
-                                return host.shadowRoot;
+                                return shadowRoot;
+                            case 'globalStore':
+                                return getGlobalStore();
                             default:
                                 return target[key] || rawWindow[key];
                         }
@@ -99,6 +116,8 @@
         ANY_OR_NO_PROPERTY.source +
         '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
     const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
+    // const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
+    // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
     function importHtml(app) {
         return __awaiter(this, void 0, void 0, function* () {
             const template = yield request(app.entry);
@@ -156,23 +175,59 @@
         return { bootstrap, mount, unmount, update };
     }
 
-    const NOT_LOADED = 'NOT_LOADED';
-    const LOADING = 'LOADING';
-    const NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED';
-    const BOOTSTRAPPING = 'BOOTSTRAPPING';
-    const NOT_MOUNTED = 'NOT_MOUNTED';
-    const MOUNTING = 'MOUNTING';
-    const MOUNTED = 'MOUNTED';
-    const UNMOUNTING = 'UNMOUNTING';
+    let isUpdating = false;
+    function reactiveStore(store) {
+        return new Proxy(store, {
+            get(target, key) {
+                return Reflect.get(target, key);
+            },
+            set(target, key, value) {
+                Reflect.set(target, key, value);
+                isUpdating = true;
+                batchUpdate(reactiveStore);
+                return true;
+            }
+        });
+    }
+    function batchUpdate(store) {
+        if (isUpdating)
+            return;
+        const apps = getApps();
+        Promise.resolve().then(() => {
+            isUpdating = false;
+            apps.forEach((app) => {
+                app.status = Status.UPDATING;
+                app.update(store, apps);
+                app.status = Status.UPDATED;
+            });
+        });
+    }
+
+    var Status;
+    (function (Status) {
+        Status["NOT_LOADED"] = "NOT_LOADED";
+        Status["LOADING"] = "LOADING";
+        Status["NOT_BOOTSTRAPPED"] = "NOT_BOOTSTRAPPED";
+        Status["BOOTSTRAPPING"] = "BOOTSTRAPPING";
+        Status["NOT_MOUNTED"] = "NOT_MOUNTED";
+        Status["MOUNTING"] = "MOUNTING";
+        Status["MOUNTED"] = "MOUNTED";
+        Status["UPDATING"] = "UPDATING";
+        Status["UPDATED"] = "UPDATED";
+        Status["UNMOUNTING"] = "UNMOUNTING";
+    })(Status || (Status = {}));
     let started = false;
     const apps = [];
+    const globalStore = reactiveStore({});
+    const getApps = () => apps;
+    const getGlobalStore = () => globalStore;
     function register(name, entry, match, props) {
         apps.push({
             name,
             entry,
             match,
             props,
-            status: NOT_LOADED
+            status: Status.NOT_LOADED
         });
     }
     function start() {
@@ -214,16 +269,16 @@
         apps.forEach((app) => {
             const isActive = app.match(window.location);
             switch (app.status) {
-                case NOT_LOADED:
-                case LOADING:
+                case Status.NOT_LOADED:
+                case Status.LOADING:
                     isActive && loads.push(app);
                     break;
-                case NOT_BOOTSTRAPPED:
-                case BOOTSTRAPPING:
-                case NOT_MOUNTED:
+                case Status.NOT_BOOTSTRAPPED:
+                case Status.BOOTSTRAPPING:
+                case Status.NOT_MOUNTED:
                     isActive && mounts.push(app);
                     break;
-                case MOUNTED:
+                case Status.MOUNTED:
                     !isActive && unmounts.push(app);
             }
         });
@@ -239,16 +294,24 @@
                 return app.loaded;
             }
             app.loaded = Promise.resolve().then(() => __awaiter(this, void 0, void 0, function* () {
-                app.status = LOADING;
-                let lifecycle = null;
+                app.status = Status.LOADING;
+                let lifecycle;
                 if (typeof app.entry === 'string') {
                     lifecycle = yield importHtml(app);
+                    lifecycleCheck(lifecycle);
                 }
                 else {
-                    lifecycle = yield app.entry(app.props);
+                    const exportedLifecycles = yield app.entry(app.props);
+                    lifecycleCheck(exportedLifecycles);
+                    const { bootstrap, mount, unmount, update } = exportedLifecycles;
+                    lifecycle = {};
+                    lifecycle.bootstrap = bootstrap ? [bootstrap] : [];
+                    lifecycle.mount = mount ? [mount] : [];
+                    lifecycle.unmount = unmount ? [unmount] : [];
+                    lifecycle.update = update ? [update] : [];
                 }
                 let host = yield loadShadow(app);
-                app.status = NOT_BOOTSTRAPPED;
+                app.status = Status.NOT_BOOTSTRAPPED;
                 app.bootstrap = compose(lifecycle.bootstrap);
                 app.mount = compose(lifecycle.mount);
                 app.unmount = compose(lifecycle.unmount);
@@ -289,34 +352,34 @@
     }
     function runUnmount(app) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (app.status != MOUNTED) {
+            if (app.status != Status.MOUNTED) {
                 return app;
             }
-            app.status = UNMOUNTING;
+            app.status = Status.UNMOUNTING;
             yield app.unmount(app.props);
-            app.status = NOT_MOUNTED;
+            app.status = Status.NOT_MOUNTED;
             return app;
         });
     }
     function runBootstrap(app) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (app.status !== NOT_BOOTSTRAPPED) {
+            if (app.status !== Status.NOT_BOOTSTRAPPED) {
                 return app;
             }
-            app.status = BOOTSTRAPPING;
+            app.status = Status.BOOTSTRAPPING;
             yield app.bootstrap(app.props);
-            app.status = NOT_MOUNTED;
+            app.status = Status.NOT_MOUNTED;
             return app;
         });
     }
     function runMount(app) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (app.status !== NOT_MOUNTED) {
+            if (app.status !== Status.NOT_MOUNTED) {
                 return app;
             }
-            app.status = MOUNTING;
+            app.status = Status.MOUNTING;
             yield app.mount(app.props);
-            app.status = MOUNTED;
+            app.status = Status.MOUNTED;
             return app;
         });
     }
@@ -352,7 +415,7 @@
     function patchedUpdateState(updateState, ...args) {
         return function () {
             const urlBefore = window.location.href;
-            //@ts-ignore
+            // @ts-ignore
             updateState.apply(this, args);
             const urlAfter = window.location.href;
             if (urlBefore !== urlAfter) {
