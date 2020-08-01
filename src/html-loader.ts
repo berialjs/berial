@@ -70,7 +70,7 @@ function parseScript(template: string) {
   }
   return {
     scriptURLs,
-    scripts
+    scripts,
   }
 }
 

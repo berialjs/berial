@@ -14,7 +14,7 @@ export function reactiveStore(store: Store) {
       isUpdating = true
       batchUpdate(reactiveStore)
       return true
-    }
+    },
   })
 }
 

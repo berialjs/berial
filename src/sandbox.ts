@@ -17,7 +17,7 @@ export async function loadSandbox(host: any) {
       set(target, key, val) {
         target[key] = val
         return true
-      }
+      },
     })
     resolve(proxy)
   })
@@ -42,6 +42,6 @@ function patchShadowDOM(host: any) {
     set(target, key, val) {
       target[key] = val
       return true
-    }
+    },
   })
 }
