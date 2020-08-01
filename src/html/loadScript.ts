@@ -1,6 +1,6 @@
 import parseScript from './parseScript'
 import runScript from './runScript'
-import { fetchURL } from '../utils/fetch'
+import { request } from '../util'
 import { PromiseFn } from '../types'
 
 interface ScriptExports {
@@ -16,7 +16,7 @@ async function loadScript(
 ): Promise<ScriptExports> {
   const { scriptURLs, scripts } = parseScript(template)
   const fetchedScripts = await Promise.all(
-    scriptURLs.map((url) => fetchURL(url))
+    scriptURLs.map((url) => request(url))
   )
   const scriptsToLoad = fetchedScripts.concat(scripts)
 

@@ -1,5 +1,5 @@
-import { fetchURL } from '../utils/fetch'
-import { REPLACED_BY_BERIAL } from '../constants'
+import { request } from '../util'
+import { REPLACED_BY_BERIAL } from '../constant'
 import { SCRIPT_ANY_RE, SCRIPT_URL_RE, SCRIPT_CONTENT_RE } from './parseScript'
 
 const loadedHTMLs: Record<
@@ -20,7 +20,7 @@ interface ToBeLoaded {
 // Fetch HTMLs on load
 async function loadAndReplaceHTMLs(toBeLoaded: ToBeLoaded[]) {
   for (const item of toBeLoaded) {
-    const originalTemplate = await fetchURL(item.url)
+    const originalTemplate = await request(item.url)
     loadedHTMLs[item.name] = {
       originalTemplate,
       replacedTemplate: replaceTemplate(originalTemplate)
