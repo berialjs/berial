@@ -12,7 +12,7 @@ function runScript(script: string, global: WindowProxy = window) {
       mount = window.mount;
       unmount = window.unmount;
       update = window.update;
-  })(global)`)
+  })(${global})`)
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }
