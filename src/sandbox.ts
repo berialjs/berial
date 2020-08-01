@@ -38,13 +38,13 @@ async function loadIframe() {
 }
 
 function patchShadowDOM(host: any) {
-  let title: string
-  defineProperty(host.shadowRoot, 'title', {
-    get() {
-      return title || document.title
+  return new Proxy(host.shadowRoot, {
+    get(target: any, key: string) {
+      return target[key] || (document as any)[key]
     },
-    set(value) {
-      title = value
+    set(target, key, val) {
+      target[key] = val
+      return true
     }
   })
 }

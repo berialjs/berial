@@ -48,6 +48,7 @@
     function loadSandbox(host) {
         return __awaiter(this, void 0, void 0, function* () {
             const rawWindow = window;
+            patchShadowDOM(host.shadowRoot);
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
                 const iframe = (yield loadIframe());
                 const proxy = new Proxy(iframe.contentWindow, {
@@ -77,6 +78,17 @@
                 document.body.append(iframe);
                 iframe.onload = () => resolve(iframe);
             });
+        });
+    }
+    function patchShadowDOM(host) {
+        return new Proxy(host.shadowRoot, {
+            get(target, key) {
+                return target[key] || document[key];
+            },
+            set(target, key, val) {
+                target[key] = val;
+                return true;
+            }
         });
     }
 
@@ -139,7 +151,7 @@
     mount = window[${umdName}].mount;
     unmount = window[${umdName}].unmount;
     update = window[${umdName}].update;
-}).bind(global)(global)`);
+  }).bind(global)(global)`);
         // @ts-ignore
         return { bootstrap, mount, unmount, update };
     }
