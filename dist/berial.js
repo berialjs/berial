@@ -130,7 +130,10 @@
             const { scriptURLs, scripts } = parseScript(template);
             const fetchedScripts = yield Promise.all(scriptURLs.map((url) => request(url)));
             const scriptsToLoad = fetchedScripts.concat(scripts);
-            let bootstrap = [], unmount = [], mount = [], update = [];
+            let bootstrap = [];
+            let unmount = [];
+            let mount = [];
+            let update = [];
             scriptsToLoad.forEach((script) => {
                 const lifecycles = runScript(script, global, name);
                 bootstrap = [...bootstrap, lifecycles.bootstrap];
