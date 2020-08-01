@@ -11,7 +11,7 @@
     "lint": "eslint **/*.ts",
     "fix": "eslint **/*.ts --fix",
     "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
-    "serve":"serve ./demo/"
+    "serve": "serve ./demo/"
   },
   "repository": {
     "type": "git",
