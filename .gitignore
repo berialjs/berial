@@ -6,7 +6,7 @@ yarn.lock
 lerna-debug.log
 
 # production
-dist/es
+dist
 
 # misc
 .DS_Store
@@ -21,3 +21,7 @@ coverage
 *.njsproj
 *.sln
 *.sw*
+
+# Lock files
+package-lock.json
+yarn.lock

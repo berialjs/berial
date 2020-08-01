@@ -103,35 +103,34 @@ async function runLoad(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
     let lifecycle: Lifecycles
+    let bodyNode: HTMLDivElement
+    let styleNodes: HTMLStyleElement[]
     if (typeof app.entry === 'string') {
-      lifecycle = await importHtml(app)
-      lifecycleCheck(lifecycle)
+      const exports = await importHtml(app)
+      lifecycleCheck(exports.lifecycle)
+      lifecycle = exports.lifecycle
+      bodyNode = exports.bodyNode
+      styleNodes = exports.styleNodes
     } else {
-      const exportedLifecycles = await app.entry(app.props)
-      lifecycleCheck(exportedLifecycles)
-
-      const { bootstrap, mount, unmount, update } = exportedLifecycles
-      lifecycle = {} as Lifecycles
-      lifecycle.bootstrap = bootstrap ? [bootstrap] : []
-      lifecycle.mount = mount ? [mount] : []
-      lifecycle.unmount = unmount ? [unmount] : []
-      lifecycle.update = update ? [update] : []
+      // TODO: 增加 bodyNode, styleNodes, loadScript
+      lifecycle = (await app.entry(app.props)) as any
+      lifecycleCheck(lifecycle)
     }
-    let host = await loadShadow(app)
+    let host = await loadShadowDOM(app, [bodyNode!, ...styleNodes!])
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
     app.unmount = compose(lifecycle.unmount)
     app.update = compose(lifecycle.update)
-    app.host = host as Element
+    app.host = host
     delete app.loaded
     return app
   })
   return app.loaded
 }
 
-async function loadShadow(app: App) {
-  return new Promise((resolve, reject) => {
+async function loadShadowDOM(app: App, kids: HTMLElement[]) {
+  return new Promise<HTMLElement>((resolve, reject) => {
     try {
       class Berial extends HTMLElement {
         static get componentName() {
@@ -139,6 +138,9 @@ async function loadShadow(app: App) {
         }
         connectedCallback() {
           this.attachShadow({ mode: 'open' })
+          for (const k of kids) {
+            this.shadowRoot?.append(k)
+          }
           resolve(this)
         }
         constructor() {

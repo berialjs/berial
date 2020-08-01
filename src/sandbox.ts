@@ -1,8 +1,8 @@
 import { getGlobalStore } from './app'
 
-export async function loadSandbox(host: any) {
+export async function loadSandbox(host: HTMLElement) {
   const rawWindow = window as any
-  const shadowRoot = patchShadowDOM(host.shadowRoot)
+  const shadowRoot = patchShadowDOM(host.shadowRoot as any)
   return new Promise(async (resolve) => {
     const iframe = (await loadIframe()) as any
     const proxy = new Proxy(iframe.contentWindow, {
@@ -36,8 +36,8 @@ async function loadIframe() {
   })
 }
 
-function patchShadowDOM(host: any) {
-  return new Proxy(host.shadowRoot, {
+function patchShadowDOM(shadowRoot: ShadowRoot) {
+  return new Proxy(shadowRoot, {
     get(target: any, key: string) {
       return target[key] || (document as any)[key]
     },
