@@ -2,7 +2,7 @@ import { Lifecycle, Lifecycles } from './types'
 
 export function warn(trigger: string): void
 export function warn(trigger: boolean, msg?: string): void
-export function warn(trigger: any, msg?: any) {
+export function warn(trigger: any, msg?: any): void {
   if (typeof trigger === 'string') msg = trigger
   if (!trigger) return
   throw new Error(`[Berial: Warning]: ${msg}`)

@@ -1,4 +1,3 @@
-import { defineProperty } from './util'
 import { getGlobalStore } from './app'
 
 export async function loadSandbox(host: any) {
