@@ -10,7 +10,8 @@
     "dev": "rollup -c --watch",
     "lint": "eslint **/*.ts",
     "fix": "eslint **/*.ts --fix",
-    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
+    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
+    "serve":"serve ./demo/import-html.html"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "prettier": "^1.19.1",
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
+    "serve": "^11.3.2",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },

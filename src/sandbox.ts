@@ -1,4 +1,4 @@
-class Sandbox {
+export class Sandbox {
   proxy: ProxyConstructor
   avtiving: boolean
   constructor() {
