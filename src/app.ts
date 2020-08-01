@@ -1,6 +1,7 @@
 import { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { reactiveStore } from './store'
+import { lifecycleCheck } from './util'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -104,13 +105,17 @@ async function runLoad(app: App) {
     let lifecycle: Lifecycles
     if (typeof app.entry === 'string') {
       lifecycle = await importHtml(app)
+      lifecycleCheck(lifecycle)
     } else {
-      const { bootstrap, mount, unmount, update } = await app.entry(app.props)
+      const exportedLifecycles = await app.entry(app.props)
+      lifecycleCheck(exportedLifecycles)
+
+      const { bootstrap, mount, unmount, update } = exportedLifecycles
       lifecycle = {} as Lifecycles
-      lifecycle.bootstrap = [bootstrap]
-      lifecycle.mount = [mount]
-      lifecycle.unmount = [unmount]
-      lifecycle.update = [update]
+      lifecycle.bootstrap = bootstrap ? [bootstrap] : []
+      lifecycle.mount = mount ? [mount] : []
+      lifecycle.unmount = unmount ? [unmount] : []
+      lifecycle.update = update ? [update] : []
     }
     let host = await loadShadow(app)
     app.status = Status.NOT_BOOTSTRAPPED

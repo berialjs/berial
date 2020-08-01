@@ -2,7 +2,7 @@ import { Status } from './app'
 
 export type Lifecycles = ToArray<Lifecycle>
 
-type Lifecycle = {
+export type Lifecycle = {
   bootstrap: PromiseFn
   unmount: PromiseFn
   mount: PromiseFn
