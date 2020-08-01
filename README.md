@@ -24,9 +24,9 @@
 import { register, start } from 'berial'
 
 register(
-  'two-app',
-  'http://localhost:3000/two.html',
-  (location) => location.hash === '#/app2'
+  'one-app',
+  'http://localhost:3000/one.html',
+  (location) => location.hash === '#/app1'
 )
 register(
   'two-app',
