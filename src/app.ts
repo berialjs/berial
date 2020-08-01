@@ -1,4 +1,5 @@
 import { App } from './types'
+import { importHtml } from './html-loader'
 
 const NOT_LOADED = 'NOT_LOADED'
 const LOADING = 'LOADING'
@@ -14,13 +15,13 @@ const apps: App[] = []
 
 export function register(
   name: string,
-  loadLifecycle: string,
+  entry: string,
   match: any,
   props: Record<string, unknown>
 ) {
   apps.push({
     name,
-    loadLifecycle,
+    entry,
     match,
     props,
     status: NOT_LOADED
@@ -92,10 +93,10 @@ async function runLoad(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = LOADING
     let lifecycle = null
-    if (typeof app.loadLifecycle === 'string') {
-      // import html
+    if (typeof app.entry === 'string') {
+      lifecycle = await importHtml(app.entry, app.name)
     } else {
-      lifecycle = await app.loadLifecycle(app.props)
+      lifecycle = await app.entry(app.props)
     }
     let host = await createShadow(app)
     app.status = NOT_BOOTSTRAPPED

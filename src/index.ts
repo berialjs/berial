@@ -1,4 +1,4 @@
-import { start, register } from './schedule'
+import { start, register } from './app'
 import { loadScript, importHtml } from './html-loader'
 import { Sandbox } from './sandbox'
 

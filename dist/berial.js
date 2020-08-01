@@ -29,6 +29,110 @@
         });
     }
 
+    function error(trigger, msg) {
+        if (typeof trigger === 'string')
+            msg = trigger;
+        if (!trigger)
+            return;
+        throw new Error(`[Berial: Error]: ${msg}`);
+    }
+    function request(url, option) {
+        if (!window.fetch) {
+            error("It looks like that your browser doesn't support fetch. Polyfill is needed before you use it.");
+        }
+        return fetch(url, Object.assign({ mode: 'cors' }, option))
+            .then((res) => res.text())
+            .then((data) => data);
+    }
+
+    class Sandbox {
+        constructor() {
+            this.avtiving = false;
+            const rawWindow = window;
+            const fakeWindow = {}; // to be frame.currentWindow
+            const proxy = new Proxy(fakeWindow, {
+                get(target, key) {
+                    return target[key] || rawWindow[key];
+                },
+                set(target, key, val) {
+                    target[key] = val;
+                    return true;
+                }
+            });
+            this.proxy = proxy;
+        }
+        active() {
+            this.avtiving = true;
+        }
+        inactive() {
+            this.avtiving = false;
+        }
+    }
+
+    const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
+    const SCRIPT_URL_RE = new RegExp('<script' +
+        ANY_OR_NO_PROPERTY.source +
+        '(?:src="(.+?)")' +
+        ANY_OR_NO_PROPERTY.source +
+        '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
+    const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
+    function importHtml(url, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const template = yield request(url);
+            const proxyWindow = new Sandbox();
+            return yield loadScript(template, proxyWindow.proxy, name);
+        });
+    }
+    function loadScript(template, global, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { scriptURLs, scripts } = parseScript(template);
+            const fetchedScripts = yield Promise.all(scriptURLs.map((url) => request(url)));
+            const scriptsToLoad = fetchedScripts.concat(scripts);
+            let bootstrap = [], unmount = [], mount = [], update = [];
+            scriptsToLoad.forEach((script) => {
+                const lifecycles = runScript(script, global, name);
+                bootstrap = [...bootstrap, lifecycles.bootstrap];
+                mount = [...mount, lifecycles.mount];
+                unmount = [...unmount, lifecycles.unmount];
+                update = [...update, lifecycles.update];
+            });
+            return { bootstrap, unmount, mount, update };
+        });
+    }
+    function parseScript(template) {
+        const scriptURLs = [];
+        const scripts = [];
+        let match;
+        while ((match = SCRIPT_URL_RE.exec(template))) {
+            const captured = match[1].trim();
+            if (!captured)
+                continue;
+            scriptURLs.push(captured);
+        }
+        while ((match = SCRIPT_CONTENT_RE.exec(template))) {
+            const captured = match[1].trim();
+            if (!captured)
+                continue;
+            scripts.push(captured);
+        }
+        return {
+            scriptURLs,
+            scripts
+        };
+    }
+    function runScript(script, global, umdName) {
+        let bootstrap, mount, unmount, update;
+        eval(`(function(window) { 
+    ${script};
+    bootstrap = window[${umdName}].bootstrap;
+    mount = window[${umdName}].mount;
+    unmount = window[${umdName}].unmount;
+    update = window[${umdName}].update;
+}).bind(global)(global)`);
+        // @ts-ignore
+        return { bootstrap, mount, unmount, update };
+    }
+
     const NOT_LOADED = 'NOT_LOADED';
     const LOADING = 'LOADING';
     const NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED';
@@ -39,10 +143,10 @@
     const UNMOUNTING = 'UNMOUNTING';
     let started = false;
     const apps = [];
-    function register(name, loadLifecycle, match, props) {
+    function register(name, entry, match, props) {
         apps.push({
             name,
-            loadLifecycle,
+            entry,
             match,
             props,
             status: NOT_LOADED
@@ -114,9 +218,11 @@
             app.loaded = Promise.resolve().then(() => __awaiter(this, void 0, void 0, function* () {
                 app.status = LOADING;
                 let lifecycle = null;
-                if (typeof app.loadLifecycle === 'string') ;
+                if (typeof app.entry === 'string') {
+                    lifecycle = yield importHtml(app.entry, app.name);
+                }
                 else {
-                    lifecycle = yield app.loadLifecycle(app.props);
+                    lifecycle = yield app.entry(app.props);
                 }
                 let host = yield createShadow(app);
                 app.status = NOT_BOOTSTRAPPED;
@@ -233,110 +339,6 @@
     }
     window.history.pushState = patchedUpdateState(window.history.pushState);
     window.history.replaceState = patchedUpdateState(window.history.replaceState);
-
-    function error(trigger, msg) {
-        if (typeof trigger === 'string')
-            msg = trigger;
-        if (!trigger)
-            return;
-        throw new Error(`[Berial: Error]: ${msg}`);
-    }
-    function request(url, option) {
-        if (!window.fetch) {
-            error("It looks like that your browser doesn't support fetch. Polyfill is needed before you use it.");
-        }
-        return fetch(url, Object.assign({ mode: 'cors' }, option))
-            .then((res) => res.text())
-            .then((data) => data);
-    }
-
-    class Sandbox {
-        constructor() {
-            this.avtiving = false;
-            const rawWindow = window;
-            const fakeWindow = {}; // to be frame.currentWindow
-            const proxy = new Proxy(fakeWindow, {
-                get(target, key) {
-                    return target[key] || rawWindow[key];
-                },
-                set(target, key, val) {
-                    target[key] = val;
-                    return true;
-                }
-            });
-            this.proxy = proxy;
-        }
-        active() {
-            this.avtiving = true;
-        }
-        inactive() {
-            this.avtiving = false;
-        }
-    }
-
-    const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
-    const SCRIPT_URL_RE = new RegExp('<script' +
-        ANY_OR_NO_PROPERTY.source +
-        '(?:src="(.+?)")' +
-        ANY_OR_NO_PROPERTY.source +
-        '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
-    const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
-    function importHtml(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const template = yield request(url);
-            const proxyWindow = new Sandbox();
-            return yield loadScript(template);
-        });
-    }
-    function loadScript(template, global) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { scriptURLs, scripts } = parseScript(template);
-            const fetchedScripts = yield Promise.all(scriptURLs.map((url) => request(url)));
-            const scriptsToLoad = fetchedScripts.concat(scripts);
-            let bootstrap = [], unmount = [], mount = [], update = [];
-            scriptsToLoad.forEach((script) => {
-                const lifecycles = runScript(script);
-                bootstrap = [...bootstrap, lifecycles.bootstrap];
-                mount = [...mount, lifecycles.mount];
-                unmount = [...unmount, lifecycles.unmount];
-                update = [...update, lifecycles.update];
-            });
-            return { bootstrap, unmount, mount, update };
-        });
-    }
-    function parseScript(template) {
-        const scriptURLs = [];
-        const scripts = [];
-        let match;
-        while ((match = SCRIPT_URL_RE.exec(template))) {
-            const captured = match[1].trim();
-            if (!captured)
-                continue;
-            scriptURLs.push(captured);
-        }
-        while ((match = SCRIPT_CONTENT_RE.exec(template))) {
-            const captured = match[1].trim();
-            if (!captured)
-                continue;
-            scripts.push(captured);
-        }
-        return {
-            scriptURLs,
-            scripts
-        };
-    }
-    function runScript(script, global) {
-        let bootstrap, mount, unmount, update;
-        eval(`(function(window) { 
-    ${script};
-    bootstrap = window.bootstrap;
-    mount = window.mount;
-    unmount = window.unmount;
-    update = window.update;
-}).bind(global)(global)`);
-        // @ts-ignore
-        return { bootstrap, mount, unmount, update };
-    }
 
     exports.Sandbox = Sandbox;
     exports.importHtml = importHtml;
