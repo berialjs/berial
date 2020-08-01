@@ -21,6 +21,10 @@ export default {
     replace({
       __DEV__: process.env.NODE_ENV !== 'production'
     }),
-    typescript()
+    typescript({
+      tsconfig: 'tsconfig.json',
+      removeComments: true,
+      useTsconfigDeclarationDir: true,
+    }),
   ]
 }

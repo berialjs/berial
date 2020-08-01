@@ -1,10 +1,10 @@
 {
   "name": "berial",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "micro frontend",
-  "main": "dist/umd/index.js",
-  "module": "dist/es/index.esm.js",
-  "types": "dist/es/index.d.ts",
+  "main": "dist/berial.js",
+  "module": "dist/berial.esm.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "rollup -c",
     "check": "run-p fmt-check lint",

@@ -40,9 +40,7 @@
         if (!window.fetch) {
             error("It looks like that your browser doesn't support fetch. Polyfill is needed before you use it.");
         }
-        return fetch(url, Object.assign({ mode: 'cors' }, option))
-            .then((res) => res.text())
-            .then((data) => data);
+        return fetch(url, Object.assign({ mode: 'cors' }, option)).then((res) => res.text());
     }
     function lifecycleCheck(lifecycle) {
         const definedLifecycles = new Map();
@@ -97,8 +95,8 @@
             });
         });
     }
-    function patchShadowDOM(host) {
-        return new Proxy(host.shadowRoot, {
+    function patchShadowDOM(shadowRoot) {
+        return new Proxy(shadowRoot, {
             get(target, key) {
                 return target[key] || document[key];
             },
@@ -109,20 +107,37 @@
         });
     }
 
-    const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
-    const SCRIPT_URL_RE = new RegExp('<script' +
-        ANY_OR_NO_PROPERTY.source +
+    const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/;
+    const SCRIPT_URL_RE = new RegExp('<\\s*script' +
+        MATCH_ANY_OR_NO_PROPERTY.source +
         '(?:src="(.+?)")' +
-        ANY_OR_NO_PROPERTY.source +
-        '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
-    const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
-    // const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
-    // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
+        MATCH_ANY_OR_NO_PROPERTY.source +
+        '(?:\\/>|>[\\s]*<\\s*/script>)?', 'g');
+    const SCRIPT_CONTENT_RE = new RegExp('<\\s*script' +
+        MATCH_ANY_OR_NO_PROPERTY.source +
+        '>([\\w\\W]+?)<\\s*/script>', 'g');
+    const MATCH_NONE_QUOTE_MARK = /[^"]/;
+    const CSS_URL_RE = new RegExp('<\\s*link[^>]*' +
+        'href="(' +
+        MATCH_NONE_QUOTE_MARK.source +
+        '+.css' +
+        MATCH_NONE_QUOTE_MARK.source +
+        '*)"' +
+        MATCH_ANY_OR_NO_PROPERTY.source +
+        '>(?:\\s*<\\s*\\/link>)?', 'g');
+    const STYLE_RE = /<\s*style\s*>([^<]*)<\s*\/style>/g;
+    const BODY_CONTENT_RE = /<\s*body[^>]*>([\w\W]*)<\s*\/body>/;
+    const SCRIPT_ANY_RE = /<\s*script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g;
+    const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/;
+    const REPLACED_BY_BERIAL = 'Script replaced by Berial.';
     function importHtml(app) {
         return __awaiter(this, void 0, void 0, function* () {
             const template = yield request(app.entry);
             const proxy = (yield loadSandbox(app.host));
-            return yield loadScript(template, proxy, app.name);
+            const lifecycle = yield loadScript(template, proxy, app.name);
+            const styleNodes = yield loadCSS(template);
+            const bodyNode = loadBody(template);
+            return { lifecycle, styleNodes, bodyNode };
         });
     }
     function loadScript(template, global, name) {
@@ -149,9 +164,12 @@
         const scripts = [];
         let match;
         while ((match = SCRIPT_URL_RE.exec(template))) {
-            const captured = match[1].trim();
+            let captured = match[1].trim();
             if (!captured)
                 continue;
+            if (!TEST_URL.test(captured)) {
+                captured = window.location.origin + captured;
+            }
             scriptURLs.push(captured);
         }
         while ((match = SCRIPT_CONTENT_RE.exec(template))) {
@@ -177,6 +195,59 @@
         // @ts-ignore
         return { bootstrap, mount, unmount, update };
     }
+    function loadCSS(template) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { cssURLs, styles } = parseCSS(template);
+            const fetchedStyles = yield Promise.all(cssURLs.map((url) => request(url)));
+            return toStyleNodes(fetchedStyles.concat(styles));
+            function toStyleNodes(styles) {
+                return styles.map((style) => {
+                    const styleNode = document.createElement('style');
+                    styleNode.appendChild(document.createTextNode(style));
+                    return styleNode;
+                });
+            }
+        });
+    }
+    function parseCSS(template) {
+        const cssURLs = [];
+        const styles = [];
+        let match;
+        while ((match = CSS_URL_RE.exec(template))) {
+            let captured = match[1].trim();
+            if (!captured)
+                continue;
+            if (!TEST_URL.test(captured)) {
+                captured = window.location.origin + captured;
+            }
+            cssURLs.push(captured);
+        }
+        while ((match = STYLE_RE.exec(template))) {
+            const captured = match[1].trim();
+            if (!captured)
+                continue;
+            styles.push(captured);
+        }
+        return {
+            cssURLs,
+            styles
+        };
+    }
+    function loadBody(template) {
+        var _a, _b;
+        let bodyContent = (_b = (_a = template.match(BODY_CONTENT_RE)) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : '';
+        bodyContent = bodyContent.replace(SCRIPT_ANY_RE, scriptReplacer);
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(bodyContent));
+        return div;
+        function scriptReplacer(substring) {
+            const matchedURL = SCRIPT_URL_RE.exec(substring);
+            if (matchedURL) {
+                return `<!-- ${REPLACED_BY_BERIAL} Original script url: ${matchedURL[1]} -->`;
+            }
+            return `<!-- ${REPLACED_BY_BERIAL} Original script: inline script -->`;
+        }
+    }
 
     let isUpdating = false;
     function reactiveStore(store) {
@@ -198,11 +269,11 @@
         const apps = getApps();
         Promise.resolve().then(() => {
             isUpdating = false;
-            apps.forEach((app) => {
+            apps.forEach((app) => __awaiter(this, void 0, void 0, function* () {
                 app.status = Status.UPDATING;
-                app.update(store, apps);
+                yield app.update(store, apps);
                 app.status = Status.UPDATED;
-            });
+            }));
         });
     }
 
@@ -299,21 +370,21 @@
             app.loaded = Promise.resolve().then(() => __awaiter(this, void 0, void 0, function* () {
                 app.status = Status.LOADING;
                 let lifecycle;
+                let bodyNode;
+                let styleNodes;
                 if (typeof app.entry === 'string') {
-                    lifecycle = yield importHtml(app);
-                    lifecycleCheck(lifecycle);
+                    const exports = yield importHtml(app);
+                    lifecycleCheck(exports.lifecycle);
+                    lifecycle = exports.lifecycle;
+                    bodyNode = exports.bodyNode;
+                    styleNodes = exports.styleNodes;
                 }
                 else {
-                    const exportedLifecycles = yield app.entry(app.props);
-                    lifecycleCheck(exportedLifecycles);
-                    const { bootstrap, mount, unmount, update } = exportedLifecycles;
-                    lifecycle = {};
-                    lifecycle.bootstrap = bootstrap ? [bootstrap] : [];
-                    lifecycle.mount = mount ? [mount] : [];
-                    lifecycle.unmount = unmount ? [unmount] : [];
-                    lifecycle.update = update ? [update] : [];
+                    // TODO: 增加 bodyNode, styleNodes, loadScript
+                    lifecycle = (yield app.entry(app.props));
+                    lifecycleCheck(lifecycle);
                 }
-                let host = yield loadShadow(app);
+                let host = yield loadShadowDOM(app, bodyNode, styleNodes);
                 app.status = Status.NOT_BOOTSTRAPPED;
                 app.bootstrap = compose(lifecycle.bootstrap);
                 app.mount = compose(lifecycle.mount);
@@ -326,29 +397,30 @@
             return app.loaded;
         });
     }
-    function loadShadow(app) {
+    function loadShadowDOM(app, body, styles) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                try {
-                    class Berial extends HTMLElement {
-                        static get componentName() {
-                            return app.name;
-                        }
-                        connectedCallback() {
-                            this.attachShadow({ mode: 'open' });
-                            resolve(this);
-                        }
-                        constructor() {
-                            super();
-                        }
+            return new Promise((resolve) => {
+                class Berial extends HTMLElement {
+                    static get componentName() {
+                        return app.name;
                     }
-                    const hasDef = window.customElements.get(app.name);
-                    if (!hasDef) {
-                        customElements.define(app.name, Berial);
+                    connectedCallback() {
+                        var _a;
+                        for (const k of styles) {
+                            (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.appendChild(k);
+                        }
+                        resolve(this);
+                    }
+                    constructor() {
+                        var _a;
+                        super();
+                        this.attachShadow({ mode: 'open' });
+                        (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.appendChild(body);
                     }
                 }
-                catch (e) {
-                    reject(e);
+                const hasDef = window.customElements.get(app.name);
+                if (!hasDef) {
+                    customElements.define(app.name, Berial);
                 }
             });
         });
@@ -390,7 +462,7 @@
     function urlReroute() {
         reroute();
     }
-    const capturedEventListeners = {
+    const capturedEvents = {
         hashchange: [],
         popstate: []
     };
@@ -400,8 +472,8 @@
     const originalRemoveEventListener = window.removeEventListener;
     window.addEventListener = function (name, fn, ...args) {
         if (routingEventsListeningTo.indexOf(name) >= 0 &&
-            !capturedEventListeners[name].some((l) => l == fn)) {
-            capturedEventListeners[name].push(fn);
+            !capturedEvents[name].some((l) => l == fn)) {
+            capturedEvents[name].push(fn);
             return;
         }
         // @ts-ignore
@@ -409,7 +481,7 @@
     };
     window.removeEventListener = function (name, fn, ...args) {
         if (routingEventsListeningTo.indexOf(name) >= 0) {
-            capturedEventListeners[name] = capturedEventListeners[name].filter((l) => l !== fn);
+            capturedEvents[name] = capturedEvents[name].filter((l) => l !== fn);
             return;
         }
         //@ts-ignore
