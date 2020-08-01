@@ -1,4 +1,4 @@
-import { PromiseFn } from './types'
+import { PromiseFn, Lifecycles } from './types'
 import { request } from './util'
 import { loadSandbox } from './sandbox'
 import { App } from './types'
@@ -20,15 +20,8 @@ const SCRIPT_CONTENT_RE = new RegExp(
 
 // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
 
-interface ScriptExports {
-  bootstrap: PromiseFn[]
-  mount: PromiseFn[]
-  unmount: PromiseFn[]
-  update: PromiseFn[]
-}
-
 export async function importHtml(app: App) {
-  const template = await request(app.entry)
+  const template = await request(app.entry as string)
   const proxy = (await loadSandbox(app.host)) as ProxyConstructor
   return await loadScript(template, proxy, app.name)
 }
@@ -37,7 +30,7 @@ export async function loadScript(
   template: string,
   global: ProxyConstructor,
   name: string
-): Promise<ScriptExports> {
+): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
   const fetchedScripts = await Promise.all(
     scriptURLs.map((url) => request(url))
