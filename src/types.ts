@@ -8,6 +8,7 @@ export type App = {
   loaded?: any
   unmount: any
   mount: any
+  update: any
   loadLifecycle: any
   bootstrap: any
 }
