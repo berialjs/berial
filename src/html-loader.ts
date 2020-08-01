@@ -20,16 +20,17 @@ const SCRIPT_CONTENT_RE = new RegExp(
 
 // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
 
-export async function importHtml(app: App) {
+export async function importHtml(app: App, host: Element) {
   const template = await request(app.entry as string)
   const proxy = (await loadSandbox(app.host)) as ProxyConstructor
-  return await loadScript(template, proxy, app.name)
+  return await loadScript(template, proxy, app.name, host)
 }
 
 export async function loadScript(
   template: string,
   global: ProxyConstructor,
-  name: string
+  name: string,
+  host: Element
 ): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
   const fetchedScripts = await Promise.all(
@@ -43,7 +44,7 @@ export async function loadScript(
   let update: PromiseFn[] = []
 
   scriptsToLoad.forEach((script) => {
-    const lifecycles = runScript(script, global, name)
+    const lifecycles = runScript(script, global, name, host)
     bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
@@ -73,19 +74,24 @@ function parseScript(template: string) {
   }
 }
 
-function runScript(script: string, global: ProxyConstructor, umdName: string) {
-  let bootstrap: PromiseFn,
-    mount: PromiseFn,
-    unmount: PromiseFn,
-    update: PromiseFn
+function runScript(
+  script: string,
+  global: ProxyConstructor,
+  umdName: string,
+  host: Element
+) {
+  let bootstrap: PromiseFn
+  let mount: PromiseFn
+  let unmount: PromiseFn
+  let update: PromiseFn
 
-  eval(`(function(window) { 
+  eval(`(function(window, document) { 
     ${script};
     bootstrap = window[${umdName}].bootstrap;
     mount = window[${umdName}].mount;
     unmount = window[${umdName}].unmount;
     update = window[${umdName}].update;
-  }).bind(global)(global)`)
+  }).bind(global)(global, host.shadowRoot)`)
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }

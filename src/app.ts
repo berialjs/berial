@@ -102,9 +102,10 @@ async function runLoad(app: App) {
   }
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
+    const host = await loadShadow(app)
     let lifecycle: Lifecycles
     if (typeof app.entry === 'string') {
-      lifecycle = await importHtml(app)
+      lifecycle = await importHtml(app, host)
       lifecycleCheck(lifecycle)
     } else {
       const exportedLifecycles = await app.entry(app.props)
@@ -117,7 +118,6 @@ async function runLoad(app: App) {
       lifecycle.unmount = unmount ? [unmount] : []
       lifecycle.update = update ? [update] : []
     }
-    let host = await loadShadow(app)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
@@ -131,7 +131,7 @@ async function runLoad(app: App) {
 }
 
 async function loadShadow(app: App) {
-  return new Promise((resolve, reject) => {
+  return new Promise<Element>((resolve, reject) => {
     try {
       class Berial extends HTMLElement {
         static get componentName() {
@@ -149,6 +149,7 @@ async function loadShadow(app: App) {
       if (!hasDef) {
         customElements.define(app.name, Berial)
       }
+      return hasDef
     } catch (e) {
       reject(e)
     }
