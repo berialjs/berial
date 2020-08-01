@@ -31,20 +31,19 @@ const CSS_URL_RE = new RegExp(
   'g'
 )
 const STYLE_RE = /<\s*style\s*>([^<]*)<\s*\/style>/g
-<<<<<<< HEAD
-const TEST_URL = /(?:https?):\/\/[-a-zA-Z0-9.]+/
-=======
+const BODY_CONTENT_RE = /<\s*body[^>]*>([\w\W]*)<\s*\/body>/
+const SCRIPT_ANY_RE = /<\s*script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
 const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/
 
->>>>>>> feat: add css parser
-// const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
-
-// const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
+const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
 
 export async function importHtml(app: App) {
   const template = await request(app.entry as string)
   const proxy = (await loadSandbox(app.host)) as ProxyConstructor
-  return await loadScript(template, proxy, app.name)
+  const lifecycle = await loadScript(template, proxy, app.name)
+  const styleNodes = await loadCSS(template)
+  const bodyNode = loadBody(template)
+  return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
@@ -115,6 +114,20 @@ function runScript(script: string, global: ProxyConstructor, umdName: string) {
   return { bootstrap, mount, unmount, update }
 }
 
+async function loadCSS(template: string) {
+  const { cssURLs, styles } = parseCSS(template)
+  const fetchedStyles = await Promise.all(cssURLs.map((url) => request(url)))
+  return toStyleNodes(fetchedStyles.concat(styles))
+
+  function toStyleNodes(styles: string[]) {
+    return styles.map((style) => {
+      const styleNode = document.createElement('style')
+      styleNode.appendChild(document.createTextNode(style))
+      return styleNode
+    })
+  }
+}
+
 function parseCSS(template: string) {
   const cssURLs: string[] = []
   const styles: string[] = []
@@ -135,5 +148,22 @@ function parseCSS(template: string) {
   return {
     cssURLs,
     styles
+  }
+}
+
+function loadBody(template: string) {
+  let bodyContent = template.match(BODY_CONTENT_RE)?.[1] ?? ''
+  bodyContent = bodyContent.replace(SCRIPT_ANY_RE, scriptReplacer)
+
+  const div = document.createElement('div')
+  div.appendChild(document.createTextNode(bodyContent))
+  return div
+
+  function scriptReplacer(substring: string) {
+    const matchedURL = SCRIPT_URL_RE.exec(substring)
+    if (matchedURL) {
+      return `<!-- ${REPLACED_BY_BERIAL} Original script url: ${matchedURL[1]} -->`
+    }
+    return `<!-- ${REPLACED_BY_BERIAL} Original script: inline script -->`
   }
 }

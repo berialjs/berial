@@ -9,7 +9,7 @@
     "build": "rollup -c",
     "check": "run-p fmt-check lint",
     "dev": "rollup -c --watch",
-    "fix": "run-s \"lint -- --fix\"",
+    "fix": "eslint --fix **/*.ts",
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
