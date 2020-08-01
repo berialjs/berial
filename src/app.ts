@@ -94,7 +94,7 @@ async function runLoad(app: App) {
     app.status = LOADING
     let lifecycle = null
     if (typeof app.entry === 'string') {
-      lifecycle = await importHtml(app.entry, app.name)
+      lifecycle = await importHtml(app)
     } else {
       lifecycle = await app.entry(app.props)
     }

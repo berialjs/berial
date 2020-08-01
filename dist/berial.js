@@ -45,14 +45,20 @@
             .then((data) => data);
     }
 
-    function loadSandbox() {
+    function loadSandbox(host) {
         return __awaiter(this, void 0, void 0, function* () {
             const rawWindow = window;
+            patchShadowDOM(host.shadowRoot);
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
                 const iframe = (yield loadIframe());
                 const proxy = new Proxy(iframe.contentWindow, {
                     get(target, key) {
-                        return target[key] || rawWindow[key];
+                        switch (key) {
+                            case 'document':
+                                return host.shadowRoot;
+                            default:
+                                return target[key] || rawWindow[key];
+                        }
                     },
                     set(target, key, val) {
                         target[key] = val;
@@ -74,6 +80,17 @@
             });
         });
     }
+    function patchShadowDOM(host) {
+        return new Proxy(host.shadowRoot, {
+            get(target, key) {
+                return target[key] || document[key];
+            },
+            set(target, key, val) {
+                target[key] = val;
+                return true;
+            }
+        });
+    }
 
     const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
     const SCRIPT_URL_RE = new RegExp('<script' +
@@ -82,11 +99,11 @@
         ANY_OR_NO_PROPERTY.source +
         '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
     const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
-    function importHtml(url, name) {
+    function importHtml(app) {
         return __awaiter(this, void 0, void 0, function* () {
-            const template = yield request(url);
-            const proxy = (yield loadSandbox());
-            return yield loadScript(template, proxy, name);
+            const template = yield request(app.entry);
+            const proxy = (yield loadSandbox(app.host));
+            return yield loadScript(template, proxy, app.name);
         });
     }
     function loadScript(template, global, name) {
@@ -134,7 +151,7 @@
     mount = window[${umdName}].mount;
     unmount = window[${umdName}].unmount;
     update = window[${umdName}].update;
-}).bind(global)(global)`);
+  }).bind(global)(global)`);
         // @ts-ignore
         return { bootstrap, mount, unmount, update };
     }
@@ -225,7 +242,7 @@
                 app.status = LOADING;
                 let lifecycle = null;
                 if (typeof app.entry === 'string') {
-                    lifecycle = yield importHtml(app.entry, app.name);
+                    lifecycle = yield importHtml(app);
                 }
                 else {
                     lifecycle = yield app.entry(app.props);

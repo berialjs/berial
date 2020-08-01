@@ -1,6 +1,7 @@
 import { PromiseFn } from './types'
 import { request } from './util'
 import { loadSandbox } from './sandbox'
+import { App } from './types'
 
 const ANY_OR_NO_PROPERTY = /["'=\w\s]*/
 const SCRIPT_URL_RE = new RegExp(
@@ -26,10 +27,10 @@ interface ScriptExports {
   update: PromiseFn[]
 }
 
-export async function importHtml(url: string, name: string) {
-  const template = await request(url)
-  const proxy = (await loadSandbox()) as ProxyConstructor
-  return await loadScript(template, proxy, name)
+export async function importHtml(app: App) {
+  const template = await request(app.entry)
+  const proxy = (await loadSandbox(app.host)) as ProxyConstructor
+  return await loadScript(template, proxy, app.name)
 }
 
 export async function loadScript(
@@ -91,7 +92,7 @@ function runScript(script: string, global: ProxyConstructor, umdName: string) {
     mount = window[${umdName}].mount;
     unmount = window[${umdName}].unmount;
     update = window[${umdName}].update;
-}).bind(global)(global)`)
+  }).bind(global)(global)`)
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }

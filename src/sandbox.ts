@@ -1,10 +1,16 @@
-export async function loadSandbox() {
+export async function loadSandbox(host: any) {
   const rawWindow = window as any
+  patchShadowDOM(host.shadowRoot)
   return new Promise(async (resolve) => {
     const iframe = (await loadIframe()) as any
     const proxy = new Proxy(iframe.contentWindow, {
       get(target: any, key: string) {
-        return target[key] || rawWindow[key]
+        switch (key) {
+          case 'document':
+            return host.shadowRoot
+          default:
+            return target[key] || rawWindow[key]
+        }
       },
       set(target, key, val) {
         target[key] = val
@@ -23,5 +29,17 @@ async function loadIframe() {
 
     document.body.append(iframe)
     iframe.onload = () => resolve(iframe)
+  })
+}
+
+function patchShadowDOM(host: any) {
+  return new Proxy(host.shadowRoot, {
+    get(target: any, key: string) {
+      return target[key] || (document as any)[key]
+    },
+    set(target, key, val) {
+      target[key] = val
+      return true
+    }
   })
 }
