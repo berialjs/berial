@@ -1,4 +1,9 @@
+[ci_image]: https://github.com/berialjs/berial/workflows/ci/badge.svg
+[ci_url]: https://github.com/berialjs/berial/actions
+
 # berial
+
+[![Build Status][ci_image]][ci_url]
 
 > micro frontend framework.
 
