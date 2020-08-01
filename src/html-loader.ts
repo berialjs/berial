@@ -3,19 +3,35 @@ import { request } from './util'
 import { loadSandbox } from './sandbox'
 import { App } from './types'
 
-const ANY_OR_NO_PROPERTY = /["'=\w\s]*/
+const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
 const SCRIPT_URL_RE = new RegExp(
-  '<script' +
-    ANY_OR_NO_PROPERTY.source +
+  '<\\s*script' +
+    MATCH_ANY_OR_NO_PROPERTY.source +
     '(?:src="(.+?)")' +
-    ANY_OR_NO_PROPERTY.source +
-    '(?:\\/>|>[\\s]*<\\/script>)?',
+    MATCH_ANY_OR_NO_PROPERTY.source +
+    '(?:\\/>|>[\\s]*<\\s*/script>)?',
   'g'
 )
 const SCRIPT_CONTENT_RE = new RegExp(
-  '<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>',
+  '<\\s*script' +
+    MATCH_ANY_OR_NO_PROPERTY.source +
+    '>([\\w\\W]+?)<\\s*/script>',
   'g'
 )
+const MATCH_NONE_QUOTE_MARK = /[^"]/
+const CSS_URL_RE = new RegExp(
+  '<\\s*link[^>]*' +
+    'href="(' +
+    MATCH_NONE_QUOTE_MARK.source +
+    '+.css' +
+    MATCH_NONE_QUOTE_MARK.source +
+    '*)"' +
+    MATCH_ANY_OR_NO_PROPERTY.source +
+    '>(?:\\s*<\\s*\\/link>)?',
+  'g'
+)
+const STYLE_RE = /<\s*style\s*>([^<]*)<\s*\/style>/g
+const TEST_URL = /(?:https?):\/\/[-a-zA-Z0-9.]+/
 // const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
 
 // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
@@ -58,8 +74,11 @@ function parseScript(template: string) {
   const scripts: string[] = []
   let match
   while ((match = SCRIPT_URL_RE.exec(template))) {
-    const captured = match[1].trim()
+    let captured = match[1].trim()
     if (!captured) continue
+    if (!TEST_URL.test(captured)) {
+      captured = window.location.origin + captured
+    }
     scriptURLs.push(captured)
   }
   while ((match = SCRIPT_CONTENT_RE.exec(template))) {
@@ -69,7 +88,7 @@ function parseScript(template: string) {
   }
   return {
     scriptURLs,
-    scripts,
+    scripts
   }
 }
 

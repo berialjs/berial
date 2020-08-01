@@ -13,7 +13,7 @@ export enum Status {
   MOUNTED = 'MOUNTED',
   UPDATING = 'UPDATING',
   UPDATED = 'UPDATED',
-  UNMOUNTING = 'UNMOUNTING',
+  UNMOUNTING = 'UNMOUNTING'
 }
 
 let started = false
@@ -34,7 +34,7 @@ export function register(
     entry,
     match,
     props,
-    status: Status.NOT_LOADED,
+    status: Status.NOT_LOADED
   } as App)
 }
 
@@ -123,7 +123,7 @@ async function runLoad(app: App) {
     app.mount = compose(lifecycle.mount)
     app.unmount = compose(lifecycle.unmount)
     app.update = compose(lifecycle.update)
-    app.host = host as Element
+    app.host = host
     delete app.loaded
     return app
   })
@@ -131,7 +131,7 @@ async function runLoad(app: App) {
 }
 
 async function loadShadow(app: App) {
-  return new Promise((resolve, reject) => {
+  return new Promise<HTMLElement>((resolve, reject) => {
     try {
       class Berial extends HTMLElement {
         static get componentName() {
@@ -192,14 +192,14 @@ function urlReroute() {
 }
 const capturedEventListeners = {
   hashchange: [],
-  popstate: [],
+  popstate: []
 } as any
 
 window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
-window.addEventListener = function (name: any, fn: any, ...args: any) {
+window.addEventListener = function(name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
     !capturedEventListeners[name].some((l: any) => l == fn)
@@ -210,7 +210,7 @@ window.addEventListener = function (name: any, fn: any, ...args: any) {
   // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
-window.removeEventListener = function (name: any, fn: any, ...args: any) {
+window.removeEventListener = function(name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
     capturedEventListeners[name] = capturedEventListeners[name].filter(
       (l: any) => l !== fn
@@ -222,7 +222,7 @@ window.removeEventListener = function (name: any, fn: any, ...args: any) {
 }
 
 function patchedUpdateState(updateState: any, ...args: any) {
-  return function () {
+  return function() {
     const urlBefore = window.location.href
     // @ts-ignore
     updateState.apply(this, args)

@@ -13,7 +13,7 @@ export type App = {
   name: string
   entry: ((props: App['props']) => Lifecycle) | string
   match: (location: Location) => boolean
-  host: Element
+  host: HTMLElement
   props: Record<string, unknown>
   status: Status
   loaded?: any
