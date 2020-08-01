@@ -1,12 +1,14 @@
-export function warn(trigger: string)
-export function warn(trigger: boolean | string, msg?: string) {
+export function warn(trigger: string): void
+export function warn(trigger: boolean, msg?: string): void
+export function warn(trigger: any, msg?: any) {
   if (typeof trigger === 'string') msg = trigger
   if (!trigger) return
   throw new Error(`[Berial: Warning]: ${msg}`)
 }
 
-export function error(trigger: string)
-export function error(trigger: boolean | string, msg?: string) {
+export function error(trigger: string): void
+export function error(trigger: boolean, msg?: string): void
+export function error(trigger: any, msg?: any) {
   if (typeof trigger === 'string') msg = trigger
   if (!trigger) return
   throw new Error(`[Berial: Error]: ${msg}`)
@@ -28,7 +30,7 @@ export function request(url: string, option?: RequestInit) {
 }
 
 export function defineProperty(
-  target: object,
+  target: any,
   key: PropertyKey,
   descriptor: PropertyDescriptor
 ) {
