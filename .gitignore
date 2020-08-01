@@ -6,7 +6,7 @@ yarn.lock
 lerna-debug.log
 
 # production
-dist
+/dist
 
 # misc
 .DS_Store
