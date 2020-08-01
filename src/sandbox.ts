@@ -1,10 +1,15 @@
-export async function loadSandbox() {
+export async function loadSandbox(host: any) {
   const rawWindow = window as any
   return new Promise(async (resolve) => {
     const iframe = (await loadIframe()) as any
     const proxy = new Proxy(iframe.contentWindow, {
       get(target: any, key: string) {
-        return target[key] || rawWindow[key]
+        switch (key) {
+          case 'document':
+            return host.shadowRoot
+          default:
+            return target[key] || rawWindow[key]
+        }
       },
       set(target, key, val) {
         target[key] = val
