@@ -7,8 +7,9 @@
   "types": "dist/es/index.d.ts",
   "scripts": {
     "build": "rollup -c",
+    "check": "run-p fmt-check lint",
     "dev": "rollup -c --watch",
-    "fix": "eslint **/*.ts --fix",
+    "fix": "run-s \"lint -- --fix\"",
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
@@ -17,15 +18,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yisar/berial.git"
+    "url": "git+https://github.com/berialjs/berial.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yisar/berial/issues"
+    "url": "https://github.com/berialjs/berial/issues"
   },
-  "homepage": "https://github.com/yisar/berial#readme",
+  "homepage": "https://github.com/berialjs/berial#readme",
   "devDependencies": {
     "@rollup/plugin-replace": "^2.3.3",
     "@types/jest": "^24.0.18",
