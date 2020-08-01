@@ -2,8 +2,7 @@ import { Lifecycle, Lifecycles } from './types'
 
 export function warn(trigger: string): void
 export function warn(trigger: boolean, msg?: string): void
-export function warn(trigger: any, msg?: any): void
-export function warn(trigger: boolean | string, msg?: string) {
+export function warn(trigger: any, msg?: any): void {
   if (typeof trigger === 'string') msg = trigger
   if (!trigger) return
   throw new Error(`[Berial: Warning]: ${msg}`)
@@ -11,8 +10,7 @@ export function warn(trigger: boolean | string, msg?: string) {
 
 export function error(trigger: string): void
 export function error(trigger: boolean, msg?: string): void
-export function error(trigger: any, msg?: any): void
-export function error(trigger: boolean | string, msg?: string) {
+export function error(trigger: any, msg?: any): void {
   if (typeof trigger === 'string') msg = trigger
   if (!trigger) return
   throw new Error(`[Berial: Error]: ${msg}`)
@@ -27,7 +25,7 @@ export function request(url: string, option?: RequestInit) {
 
   return fetch(url, {
     mode: 'cors',
-    ...option,
+    ...option
   })
     .then((res) => res.text())
     .then((data) => data)
