@@ -25,7 +25,7 @@ export function request(url: string, option?: RequestInit) {
 
   return fetch(url, {
     mode: 'cors',
-    ...option
+    ...option,
   })
     .then((res) => res.text())
     .then((data) => data)
