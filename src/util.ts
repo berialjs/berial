@@ -26,9 +26,7 @@ export function request(url: string, option?: RequestInit) {
   return fetch(url, {
     mode: 'cors',
     ...option
-  })
-    .then((res) => res.text())
-    .then((data) => data)
+  }).then((res) => res.text())
 }
 
 export function defineProperty(
@@ -61,5 +59,14 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
       __DEV__,
       `It looks like that you didn't export the lifecycle hook [unmount], which would cause a mistake.`
     )
+  }
+}
+
+export function appendChildren<T extends HTMLElement | ShadowRoot>(
+  element: T,
+  children: Element[]
+) {
+  for (const child of children) {
+    element.appendChild(child)
   }
 }

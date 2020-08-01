@@ -1,7 +1,7 @@
 import { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { reactiveStore } from './store'
-import { lifecycleCheck } from './util'
+import { appendChildren, lifecycleCheck } from './util'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -103,10 +103,16 @@ async function runLoad(app: App) {
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
     let lifecycle: Lifecycles
+    let bodyNode: HTMLDivElement
+    let styleNodes: HTMLStyleElement[]
     if (typeof app.entry === 'string') {
-      lifecycle = await importHtml(app)
-      lifecycleCheck(lifecycle)
+      const exports = await importHtml(app)
+      lifecycleCheck(exports.lifecycle)
+      lifecycle = exports.lifecycle
+      bodyNode = exports.bodyNode
+      styleNodes = exports.styleNodes
     } else {
+      // TODO: 增加 bodyNode, styleNodes, loadScript
       const exportedLifecycles = await app.entry(app.props)
       lifecycleCheck(exportedLifecycles)
 
@@ -118,6 +124,7 @@ async function runLoad(app: App) {
       lifecycle.update = update ? [update] : []
     }
     let host = await loadShadow(app)
+    appendChildren(host.shadowRoot!, [...styleNodes!, bodyNode!])
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
@@ -199,7 +206,7 @@ window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
-window.addEventListener = function(name: any, fn: any, ...args: any) {
+window.addEventListener = function (name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
     !capturedEventListeners[name].some((l: any) => l == fn)
@@ -210,7 +217,7 @@ window.addEventListener = function(name: any, fn: any, ...args: any) {
   // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
-window.removeEventListener = function(name: any, fn: any, ...args: any) {
+window.removeEventListener = function (name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
     capturedEventListeners[name] = capturedEventListeners[name].filter(
       (l: any) => l !== fn
@@ -222,7 +229,7 @@ window.removeEventListener = function(name: any, fn: any, ...args: any) {
 }
 
 function patchedUpdateState(updateState: any, ...args: any) {
-  return function() {
+  return function () {
     const urlBefore = window.location.href
     // @ts-ignore
     updateState.apply(this, args)
