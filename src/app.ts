@@ -1,5 +1,6 @@
-import { App } from './types'
+import { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
+import { reactiveStore } from './store'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -9,13 +10,17 @@ export enum Status {
   NOT_MOUNTED = 'NOT_MOUNTED',
   MOUNTING = 'MOUNTING',
   MOUNTED = 'MOUNTED',
+  UPDATING = 'UPDATING',
+  UPDATED = 'UPDATED',
   UNMOUNTING = 'UNMOUNTING'
 }
 
 let started = false
 const apps: App[] = []
+const globalStore = reactiveStore({})
 
 export const getApps = () => apps
+export const getGlobalStore = () => globalStore
 
 export function register(
   name: string,
@@ -96,11 +101,16 @@ async function runLoad(app: App) {
   }
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
-    let lifecycle = null
+    let lifecycle: Lifecycles
     if (typeof app.entry === 'string') {
       lifecycle = await importHtml(app)
     } else {
-      lifecycle = await app.entry(app.props)
+      const { bootstrap, mount, unmount, update } = await app.entry(app.props)
+      lifecycle = {} as Lifecycles
+      lifecycle.bootstrap = [bootstrap]
+      lifecycle.mount = [mount]
+      lifecycle.unmount = [unmount]
+      lifecycle.update = [update]
     }
     let host = await loadShadow(app)
     app.status = Status.NOT_BOOTSTRAPPED

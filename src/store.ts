@@ -1,11 +1,11 @@
-import { getApps } from './app'
+import { getApps, Status } from './app'
 
 type Store = Record<PropertyKey, any>
 
 let isUpdating = false
 
-export function reactive(store: Store) {
-  const reactiveStore = new Proxy(store, {
+export function reactiveStore(store: Store) {
+  return new Proxy(store, {
     get(target, key) {
       return Reflect.get(target, key)
     },
@@ -16,7 +16,6 @@ export function reactive(store: Store) {
       return true
     }
   })
-  return reactiveStore
 }
 
 function batchUpdate(store: Store) {
@@ -25,7 +24,9 @@ function batchUpdate(store: Store) {
   Promise.resolve().then(() => {
     isUpdating = false
     apps.forEach((app) => {
-      app.update(store)
+      app.status = Status.UPDATING
+      app.update(store, apps)
+      app.status = Status.UPDATED
     })
   })
 }
