@@ -1,26 +1,41 @@
 # berial
 
-micro frontend framework
+> micro frontend framework.
+
+### Feature
+
+- shadow dom
+
+- scoped css
+
+- js sandbox
+
+- html loader
+
+### Use
+
+```html
+<one-app></one-app>
+
+<two-app></two-app>
+```
 
 ```js
-(async (ctx) => {
-  const { register, start } = ctx.berial
+import { register, start } from 'berial'
 
-  const React = {
-    render: host => ReactDOM.render(<App msg="react" />, host.shadowRoot)
-  }
-
-  const Vue = {
-    render: host =>
-      new Vue({
-        el: host.name,
-        data: { msg: "vue" },
-        template: `<div>{{ msg }}</div>`,
-      }),
-  }
-
-  register("react-app", React, "#/app1")
-  register("vue-app", Vue, "#/app2")
-  start()
-})(window)
+register(
+  'two-app',
+  'http://localhost:3000/two.html',
+  (location) => location.hash === '#/app2'
+)
+register(
+  'two-app',
+  'http://localhost:3000/two.html',
+  (location) => location.hash === '#/app2'
+)
+start()
 ```
+
+### License
+
+MIT ©yisar ©h-a-n-a

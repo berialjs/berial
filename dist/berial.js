@@ -49,7 +49,7 @@
         return __awaiter(this, void 0, void 0, function* () {
             const rawWindow = window;
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-                const iframe = yield loadIframe();
+                const iframe = (yield loadIframe());
                 const proxy = new Proxy(iframe.contentWindow, {
                     get(target, key) {
                         return target[key] || rawWindow[key];
