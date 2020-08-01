@@ -40,7 +40,13 @@
         if (!window.fetch) {
             error("It looks like that your browser doesn't support fetch. Polyfill is needed before you use it.");
         }
+<<<<<<< HEAD
         return fetch(url, Object.assign({ mode: 'cors' }, option)).then((res) => res.text());
+=======
+        return fetch(url, Object.assign({ mode: 'cors' }, option))
+            .then((res) => res.text())
+            .then((data) => data);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
     }
     function lifecycleCheck(lifecycle) {
         const definedLifecycles = new Map();
@@ -95,8 +101,13 @@
             });
         });
     }
+<<<<<<< HEAD
     function patchShadowDOM(shadowRoot) {
         return new Proxy(shadowRoot, {
+=======
+    function patchShadowDOM(host) {
+        return new Proxy(host.shadowRoot, {
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
             get(target, key) {
                 return target[key] || document[key];
             },
@@ -107,6 +118,7 @@
         });
     }
 
+<<<<<<< HEAD
     const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/;
     const SCRIPT_URL_RE = new RegExp('<\\s*script' +
         MATCH_ANY_OR_NO_PROPERTY.source +
@@ -130,14 +142,29 @@
     const SCRIPT_ANY_RE = /<\s*script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g;
     const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/;
     const REPLACED_BY_BERIAL = 'Script replaced by Berial.';
+=======
+    const ANY_OR_NO_PROPERTY = /["'=\w\s]*/;
+    const SCRIPT_URL_RE = new RegExp('<script' +
+        ANY_OR_NO_PROPERTY.source +
+        '(?:src="(.+?)")' +
+        ANY_OR_NO_PROPERTY.source +
+        '(?:\\/>|>[\\s]*<\\/script>)?', 'g');
+    const SCRIPT_CONTENT_RE = new RegExp('<script' + ANY_OR_NO_PROPERTY.source + '>([\\w\\W]+?)</script>', 'g');
+    // const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
+    // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
     function importHtml(app) {
         return __awaiter(this, void 0, void 0, function* () {
             const template = yield request(app.entry);
             const proxy = (yield loadSandbox(app.host));
+<<<<<<< HEAD
             const lifecycle = yield loadScript(template, proxy, app.name);
             const styleNodes = yield loadCSS(template);
             const bodyNode = loadBody(template);
             return { lifecycle, styleNodes, bodyNode };
+=======
+            return yield loadScript(template, proxy, app.name);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
         });
     }
     function loadScript(template, global, name) {
@@ -164,12 +191,18 @@
         const scripts = [];
         let match;
         while ((match = SCRIPT_URL_RE.exec(template))) {
+<<<<<<< HEAD
             let captured = match[1].trim();
             if (!captured)
                 continue;
             if (!TEST_URL.test(captured)) {
                 captured = window.location.origin + captured;
             }
+=======
+            const captured = match[1].trim();
+            if (!captured)
+                continue;
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
             scriptURLs.push(captured);
         }
         while ((match = SCRIPT_CONTENT_RE.exec(template))) {
@@ -195,6 +228,7 @@
         // @ts-ignore
         return { bootstrap, mount, unmount, update };
     }
+<<<<<<< HEAD
     function loadCSS(template) {
         return __awaiter(this, void 0, void 0, function* () {
             const { cssURLs, styles } = parseCSS(template);
@@ -248,6 +282,8 @@
             return `<!-- ${REPLACED_BY_BERIAL} Original script: inline script -->`;
         }
     }
+=======
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
 
     let isUpdating = false;
     function reactiveStore(store) {
@@ -269,11 +305,19 @@
         const apps = getApps();
         Promise.resolve().then(() => {
             isUpdating = false;
+<<<<<<< HEAD
             apps.forEach((app) => __awaiter(this, void 0, void 0, function* () {
                 app.status = Status.UPDATING;
                 yield app.update(store, apps);
                 app.status = Status.UPDATED;
             }));
+=======
+            apps.forEach((app) => {
+                app.status = Status.UPDATING;
+                app.update(store, apps);
+                app.status = Status.UPDATED;
+            });
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
         });
     }
 
@@ -370,6 +414,7 @@
             app.loaded = Promise.resolve().then(() => __awaiter(this, void 0, void 0, function* () {
                 app.status = Status.LOADING;
                 let lifecycle;
+<<<<<<< HEAD
                 let bodyNode;
                 let styleNodes;
                 if (typeof app.entry === 'string') {
@@ -385,6 +430,23 @@
                     lifecycleCheck(lifecycle);
                 }
                 let host = yield loadShadowDOM(app, bodyNode, styleNodes);
+=======
+                if (typeof app.entry === 'string') {
+                    lifecycle = yield importHtml(app);
+                    lifecycleCheck(lifecycle);
+                }
+                else {
+                    const exportedLifecycles = yield app.entry(app.props);
+                    lifecycleCheck(exportedLifecycles);
+                    const { bootstrap, mount, unmount, update } = exportedLifecycles;
+                    lifecycle = {};
+                    lifecycle.bootstrap = bootstrap ? [bootstrap] : [];
+                    lifecycle.mount = mount ? [mount] : [];
+                    lifecycle.unmount = unmount ? [unmount] : [];
+                    lifecycle.update = update ? [update] : [];
+                }
+                let host = yield loadShadow(app);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
                 app.status = Status.NOT_BOOTSTRAPPED;
                 app.bootstrap = compose(lifecycle.bootstrap);
                 app.mount = compose(lifecycle.mount);
@@ -397,6 +459,7 @@
             return app.loaded;
         });
     }
+<<<<<<< HEAD
     function loadShadowDOM(app, body, styles) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => {
@@ -421,6 +484,31 @@
                 const hasDef = window.customElements.get(app.name);
                 if (!hasDef) {
                     customElements.define(app.name, Berial);
+=======
+    function loadShadow(app) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                try {
+                    class Berial extends HTMLElement {
+                        static get componentName() {
+                            return app.name;
+                        }
+                        connectedCallback() {
+                            this.attachShadow({ mode: 'open' });
+                            resolve(this);
+                        }
+                        constructor() {
+                            super();
+                        }
+                    }
+                    const hasDef = window.customElements.get(app.name);
+                    if (!hasDef) {
+                        customElements.define(app.name, Berial);
+                    }
+                }
+                catch (e) {
+                    reject(e);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
                 }
             });
         });
@@ -462,7 +550,11 @@
     function urlReroute() {
         reroute();
     }
+<<<<<<< HEAD
     const capturedEvents = {
+=======
+    const capturedEventListeners = {
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
         hashchange: [],
         popstate: []
     };
@@ -472,8 +564,13 @@
     const originalRemoveEventListener = window.removeEventListener;
     window.addEventListener = function (name, fn, ...args) {
         if (routingEventsListeningTo.indexOf(name) >= 0 &&
+<<<<<<< HEAD
             !capturedEvents[name].some((l) => l == fn)) {
             capturedEvents[name].push(fn);
+=======
+            !capturedEventListeners[name].some((l) => l == fn)) {
+            capturedEventListeners[name].push(fn);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
             return;
         }
         // @ts-ignore
@@ -481,7 +578,11 @@
     };
     window.removeEventListener = function (name, fn, ...args) {
         if (routingEventsListeningTo.indexOf(name) >= 0) {
+<<<<<<< HEAD
             capturedEvents[name] = capturedEvents[name].filter((l) => l !== fn);
+=======
+            capturedEventListeners[name] = capturedEventListeners[name].filter((l) => l !== fn);
+>>>>>>> 663fd3712822f0516f12306713f5aa622810bbf9
             return;
         }
         //@ts-ignore
