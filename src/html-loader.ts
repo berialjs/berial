@@ -31,7 +31,12 @@ const CSS_URL_RE = new RegExp(
   'g'
 )
 const STYLE_RE = /<\s*style\s*>([^<]*)<\s*\/style>/g
+<<<<<<< HEAD
 const TEST_URL = /(?:https?):\/\/[-a-zA-Z0-9.]+/
+=======
+const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/
+
+>>>>>>> feat: add css parser
 // const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
 
 // const SCRIPT_ANY_RE = /<script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
@@ -108,4 +113,27 @@ function runScript(script: string, global: ProxyConstructor, umdName: string) {
 
   // @ts-ignore
   return { bootstrap, mount, unmount, update }
+}
+
+function parseCSS(template: string) {
+  const cssURLs: string[] = []
+  const styles: string[] = []
+  let match
+  while ((match = CSS_URL_RE.exec(template))) {
+    let captured = match[1].trim()
+    if (!captured) continue
+    if (!TEST_URL.test(captured)) {
+      captured = window.location.origin + captured
+    }
+    cssURLs.push(captured)
+  }
+  while ((match = STYLE_RE.exec(template))) {
+    const captured = match[1].trim()
+    if (!captured) continue
+    styles.push(captured)
+  }
+  return {
+    cssURLs,
+    styles
+  }
 }
