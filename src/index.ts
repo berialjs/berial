@@ -18,11 +18,6 @@ export function register(
   match: any,
   props: Record<string, unknown>
 ) {
-  if (typeof match === 'string') {
-    match = (location: Window['location']) =>
-      location.pathname.startsWith(match)
-  }
-
   apps.push({
     name,
     loadLifecycle,
@@ -191,6 +186,7 @@ window.addEventListener = function(name: any, fn: any, ...args: any) {
     capturedEventListeners[name].push(fn)
     return
   }
+  // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
 window.removeEventListener = function(name: any, fn: any, ...args: any) {
@@ -200,6 +196,7 @@ window.removeEventListener = function(name: any, fn: any, ...args: any) {
     )
     return
   }
+  //@ts-ignore
   return originalRemoveEventListener.apply(this, args)
 }
 
