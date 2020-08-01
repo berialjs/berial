@@ -116,7 +116,7 @@ async function runLoad(app: App) {
       lifecycle = (await app.entry(app.props)) as any
       lifecycleCheck(lifecycle)
     }
-    let host = await loadShadowDOM(app, [bodyNode!, ...styleNodes!])
+    let host = await loadShadowDOM(app, bodyNode!, styleNodes!)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
@@ -129,30 +129,31 @@ async function runLoad(app: App) {
   return app.loaded
 }
 
-async function loadShadowDOM(app: App, kids: HTMLElement[]) {
-  return new Promise<HTMLElement>((resolve, reject) => {
-    try {
-      class Berial extends HTMLElement {
-        static get componentName() {
-          return app.name
-        }
-        connectedCallback() {
-          this.attachShadow({ mode: 'open' })
-          for (const k of kids) {
-            this.shadowRoot?.append(k)
-          }
-          resolve(this)
-        }
-        constructor() {
-          super()
-        }
+async function loadShadowDOM(
+  app: App,
+  body: HTMLElement,
+  styles: HTMLElement[]
+) {
+  return new Promise<HTMLElement>((resolve) => {
+    class Berial extends HTMLElement {
+      static get componentName() {
+        return app.name
       }
-      const hasDef = window.customElements.get(app.name)
-      if (!hasDef) {
-        customElements.define(app.name, Berial)
+      connectedCallback() {
+        this.attachShadow({ mode: 'open' })
+        for (const k of styles) {
+          this.shadowRoot?.appendChild(k)
+        }
+        resolve(this)
       }
-    } catch (e) {
-      reject(e)
+      constructor() {
+        super()
+        this.shadowRoot?.appendChild(body)
+      }
+    }
+    const hasDef = window.customElements.get(app.name)
+    if (!hasDef) {
+      customElements.define(app.name, Berial)
     }
   })
 }
@@ -192,7 +193,7 @@ const routingEventsListeningTo = ['hashchange', 'popstate']
 function urlReroute() {
   reroute()
 }
-const capturedEventListeners = {
+const capturedEvents = {
   hashchange: [],
   popstate: []
 } as any
@@ -204,9 +205,9 @@ const originalRemoveEventListener = window.removeEventListener
 window.addEventListener = function(name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
-    !capturedEventListeners[name].some((l: any) => l == fn)
+    !capturedEvents[name].some((l: any) => l == fn)
   ) {
-    capturedEventListeners[name].push(fn)
+    capturedEvents[name].push(fn)
     return
   }
   // @ts-ignore
@@ -214,9 +215,7 @@ window.addEventListener = function(name: any, fn: any, ...args: any) {
 }
 window.removeEventListener = function(name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
-    capturedEventListeners[name] = capturedEventListeners[name].filter(
-      (l: any) => l !== fn
-    )
+    capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
     return
   }
   //@ts-ignore
