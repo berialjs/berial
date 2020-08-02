@@ -53,3 +53,12 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
     )
   }
 }
+
+export function reverse(arr: any[]) {
+  let last: any
+  const reversed: any[] = []
+  while ((last = arr.pop())) {
+    reversed.push(last)
+  }
+  return reversed
+}

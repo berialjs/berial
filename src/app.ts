@@ -135,14 +135,14 @@ async function loadShadowDOM(
       }
       connectedCallback() {
         for (const k of styles) {
-          this.shadowRoot?.appendChild(k)
+          this.shadowRoot!.insertBefore(k, this.shadowRoot!.firstChild)
         }
         resolve(this)
       }
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        this.shadowRoot?.appendChild(body)
+        this.shadowRoot!.appendChild(body)
       }
     }
     const hasDef = window.customElements.get(app.name)

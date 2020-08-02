@@ -120,11 +120,13 @@ async function loadCSS(template: string) {
   return toStyleNodes(fetchedStyles.concat(styles))
 
   function toStyleNodes(styles: string[]) {
-    return styles.map((style) => {
+    const styleNodes = styles.map((style) => {
       const styleNode = document.createElement('style')
       styleNode.appendChild(document.createTextNode(style))
       return styleNode
     })
+    // Make sure to reverse style nodes to avoid css specification error when insertingBefore any inserted styles
+    return styleNodes.reverse()
   }
 }
 
