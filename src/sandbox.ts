@@ -1,6 +1,4 @@
-import { getGlobalStore } from './app'
-
-export async function loadSandbox(host: HTMLElement) {
+export async function loadSandbox(host: any) {
   const rawWindow = window as any
   const shadowRoot = patchShadowDOM(host.shadowRoot as any)
   return new Promise(async (resolve) => {
@@ -10,8 +8,8 @@ export async function loadSandbox(host: HTMLElement) {
         switch (key) {
           case 'document':
             return shadowRoot
-          case 'globalStore':
-            return getGlobalStore()
+          case 'store':
+            return host.store
           default:
             return target[key] || rawWindow[key]
         }

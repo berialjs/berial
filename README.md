@@ -19,6 +19,8 @@
 
 - html loader
 
+- global store
+
 ### Use
 
 ```html

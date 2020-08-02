@@ -1,6 +1,5 @@
 import { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
-import { reactiveStore } from './store'
 import { lifecycleCheck } from './util'
 
 export enum Status {
@@ -18,10 +17,6 @@ export enum Status {
 
 let started = false
 const apps: App[] = []
-const globalStore = reactiveStore({})
-
-export const getApps = () => apps
-export const getGlobalStore = () => globalStore
 
 export function register(name: string, entry: string, match: any) {
   apps.push({
@@ -32,12 +27,12 @@ export function register(name: string, entry: string, match: any) {
   } as App)
 }
 
-export function start() {
+export function start(store: any) {
   started = true
-  reroute()
+  reroute(store)
 }
 
-function reroute() {
+function reroute(store: any) {
   const { loads, mounts, unmounts } = getAppChanges()
   if (started) {
     return perform()
@@ -50,7 +45,7 @@ function reroute() {
   async function perform() {
     unmounts.map(runUnmount)
     loads.map(async (app) => {
-      app = await runLoad(app)
+      app = await runLoad(app, store)
       app = await runBootstrap(app)
       return runMount(app)
     })
@@ -90,7 +85,7 @@ function compose(fns: ((app: App) => Promise<any>)[]) {
     fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
 }
 
-async function runLoad(app: App) {
+async function runLoad(app: App, store: any) {
   if (app.loaded) {
     return app.loaded
   }
@@ -99,6 +94,7 @@ async function runLoad(app: App) {
     let lifecycle: Lifecycles
     let bodyNode: HTMLDivElement
     let styleNodes: HTMLStyleElement[]
+    let host = (await loadShadowDOM(app, store, bodyNode!, styleNodes!)) as any
     if (typeof app.entry === 'string') {
       const exports = await importHtml(app)
       lifecycleCheck(exports.lifecycle)
@@ -106,11 +102,9 @@ async function runLoad(app: App) {
       bodyNode = exports.bodyNode
       styleNodes = exports.styleNodes
     } else {
-      // TODO: 增加 bodyNode, styleNodes, loadScript
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
-    let host = await loadShadowDOM(app, bodyNode!, styleNodes!)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
@@ -123,14 +117,33 @@ async function runLoad(app: App) {
   return app.loaded
 }
 
+function loadStore(store: any, app: any) {
+  return new Proxy(store, {
+    get(target, key) {
+      return target[key]
+    },
+    set(target, key, val) {
+      target[key] = val
+      if (app.status === Status.MOUNTED) {
+        // batch updates
+        reroute(store) // unmount
+        app.status = Status.NOT_MOUNTED
+        reroute(store) // mount
+      }
+      return true
+    }
+  })
+}
+
 async function loadShadowDOM(
   app: App,
+  store: any,
   body: HTMLElement,
   styles: HTMLElement[]
 ) {
   return new Promise<HTMLElement>((resolve) => {
     class Berial extends HTMLElement {
-      static get componentName() {
+      static get tag() {
         return app.name
       }
       connectedCallback() {
@@ -139,10 +152,12 @@ async function loadShadowDOM(
         }
         resolve(this)
       }
+      store: any
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        this.shadowRoot!.appendChild(body)
+        this.shadowRoot?.appendChild(body)
+        this.store = loadStore(store, app)
       }
     }
     const hasDef = window.customElements.get(app.name)
@@ -185,7 +200,7 @@ async function runMount(app: App) {
 const routingEventsListeningTo = ['hashchange', 'popstate']
 
 function urlReroute() {
-  reroute()
+  reroute({})
 }
 const capturedEvents = {
   hashchange: [],
@@ -196,7 +211,7 @@ window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
-window.addEventListener = function (name: any, fn: any, ...args: any) {
+window.addEventListener = function(name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
     !capturedEvents[name].some((l: any) => l == fn)
@@ -207,7 +222,7 @@ window.addEventListener = function (name: any, fn: any, ...args: any) {
   // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
-window.removeEventListener = function (name: any, fn: any, ...args: any) {
+window.removeEventListener = function(name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
     capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
     return
@@ -217,7 +232,7 @@ window.removeEventListener = function (name: any, fn: any, ...args: any) {
 }
 
 function patchedUpdateState(updateState: any, ...args: any) {
-  return function () {
+  return function() {
     const urlBefore = window.location.href
     // @ts-ignore
     updateState.apply(this, args)
