@@ -16,10 +16,11 @@ export enum Status {
 }
 
 let started = false
-const apps: App[] = []
+const apps: any = new Set()
+const deps: any = new Set()
 
 export function register(name: string, entry: string, match: any) {
-  apps.push({
+  apps.add({
     name,
     entry,
     match,
@@ -29,7 +30,7 @@ export function register(name: string, entry: string, match: any) {
 
 export function start(store: any) {
   started = true
-  reroute(store)
+  reroute(store || {})
 }
 
 function reroute(store: any) {
@@ -60,7 +61,7 @@ function getAppChanges() {
   const unmounts: App[] = []
   const loads: App[] = []
   const mounts: App[] = []
-  apps.forEach((app) => {
+  apps.forEach((app: any) => {
     const isActive = app.match(window.location)
     switch (app.status) {
       case Status.NOT_LOADED:
@@ -120,16 +121,16 @@ async function runLoad(app: App, store: any) {
 function loadStore(store: any, app: any) {
   return new Proxy(store, {
     get(target, key) {
+      const has = app.deps.has(app)
+      if (!has) {
+        // collect once
+        deps.add(app)
+      }
       return target[key]
     },
     set(target, key, val) {
       target[key] = val
-      if (app.status === Status.MOUNTED) {
-        // batch updates
-        reroute(store) // unmount
-        app.status = Status.NOT_MOUNTED
-        reroute(store) // mount
-      }
+      deps.forEach((app: App) => app.update(app))
       return true
     }
   })
@@ -138,8 +139,8 @@ function loadStore(store: any, app: any) {
 async function loadShadowDOM(
   app: App,
   store: any,
-  body: HTMLElement,
-  styles: HTMLElement[]
+  body?: HTMLElement,
+  styles?: HTMLElement[]
 ) {
   return new Promise<HTMLElement>((resolve) => {
     class Berial extends HTMLElement {
@@ -147,8 +148,10 @@ async function loadShadowDOM(
         return app.name
       }
       connectedCallback() {
-        for (const k of styles) {
-          this.shadowRoot?.appendChild(k)
+        if (styles) {
+          for (const k of styles) {
+            this.shadowRoot!.insertBefore(k, this.shadowRoot!.firstChild)
+          }
         }
         resolve(this)
       }
@@ -156,7 +159,7 @@ async function loadShadowDOM(
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        this.shadowRoot?.appendChild(body)
+        body && this.shadowRoot?.appendChild(body)
         this.store = loadStore(store, app)
       }
     }
@@ -211,7 +214,7 @@ window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
-window.addEventListener = function(name: any, fn: any, ...args: any) {
+window.addEventListener = function (name: any, fn: any, ...args: any) {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
     !capturedEvents[name].some((l: any) => l == fn)
@@ -222,7 +225,7 @@ window.addEventListener = function(name: any, fn: any, ...args: any) {
   // @ts-ignore
   return originalAddEventListener.apply(this, args)
 }
-window.removeEventListener = function(name: any, fn: any, ...args: any) {
+window.removeEventListener = function (name: any, fn: any, ...args: any) {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
     capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
     return
@@ -232,7 +235,7 @@ window.removeEventListener = function(name: any, fn: any, ...args: any) {
 }
 
 function patchedUpdateState(updateState: any, ...args: any) {
-  return function() {
+  return function () {
     const urlBefore = window.location.href
     // @ts-ignore
     updateState.apply(this, args)
