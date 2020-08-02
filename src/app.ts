@@ -118,18 +118,19 @@ async function runLoad(app: App, store: any) {
 }
 
 function loadStore(store: any, app: any) {
+  if (!app.deps) app.deps = new Set()
   return new Proxy(store, {
     get(target, key) {
+      const has = app.deps.has(app)
+      if (!has) {
+        // collect once
+        app.deps.add(app)
+      }
       return target[key]
     },
     set(target, key, val) {
       target[key] = val
-      if (app.status === Status.MOUNTED) {
-        // batch updates
-        reroute(store) // unmount
-        app.status = Status.NOT_MOUNTED
-        reroute(store) // mount
-      }
+      app.deps.forEach((app: App) => app.update(app))
       return true
     }
   })
