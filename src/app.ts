@@ -23,17 +23,11 @@ const globalStore = reactiveStore({})
 export const getApps = () => apps
 export const getGlobalStore = () => globalStore
 
-export function register(
-  name: string,
-  entry: string,
-  match: any,
-  props: Record<string, unknown>
-) {
+export function register(name: string, entry: string, match: any) {
   apps.push({
     name,
     entry,
     match,
-    props,
     status: Status.NOT_LOADED
   } as App)
 }
@@ -90,10 +84,10 @@ function getAppChanges() {
   return { unmounts, loads, mounts }
 }
 
-function compose(fns: ((props: any) => Promise<any>)[]) {
+function compose(fns: ((app: App) => Promise<any>)[]) {
   fns = Array.isArray(fns) ? fns : [fns]
-  return (props: any) =>
-    fns.reduce((p, fn) => p.then(() => fn(props)), Promise.resolve())
+  return (app: App) =>
+    fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
 }
 
 async function runLoad(app: App) {
@@ -113,7 +107,7 @@ async function runLoad(app: App) {
       styleNodes = exports.styleNodes
     } else {
       // TODO: 增加 bodyNode, styleNodes, loadScript
-      lifecycle = (await app.entry(app.props)) as any
+      lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
     let host = await loadShadowDOM(app, bodyNode!, styleNodes!)
@@ -163,7 +157,7 @@ async function runUnmount(app: App) {
     return app
   }
   app.status = Status.UNMOUNTING
-  await app.unmount(app.props)
+  await app.unmount(app)
   app.status = Status.NOT_MOUNTED
   return app
 }
@@ -173,7 +167,7 @@ async function runBootstrap(app: App) {
     return app
   }
   app.status = Status.BOOTSTRAPPING
-  await app.bootstrap(app.props)
+  await app.bootstrap(app)
   app.status = Status.NOT_MOUNTED
   return app
 }
@@ -183,7 +177,7 @@ async function runMount(app: App) {
     return app
   }
   app.status = Status.MOUNTING
-  await app.mount(app.props)
+  await app.mount(app)
   app.status = Status.MOUNTED
   return app
 }
