@@ -17,6 +17,7 @@ export type App = {
   props: Record<string, unknown>
   status: Status
   loaded?: any
+  store?: any
   loadLifecycle: any
   unmount: PromiseFn
   mount: PromiseFn
