@@ -95,13 +95,18 @@ async function runLoad(app: App, store: any) {
     let lifecycle: Lifecycles
     let bodyNode: HTMLDivElement
     let styleNodes: HTMLStyleElement[]
-    let host = (await loadShadowDOM(app, store, bodyNode!, styleNodes!)) as any
+    let host = (await loadShadowDOM(app, store)) as any // null shadow dom
     if (typeof app.entry === 'string') {
       const exports = await importHtml(app)
       lifecycleCheck(exports.lifecycle)
       lifecycle = exports.lifecycle
       bodyNode = exports.bodyNode
       styleNodes = exports.styleNodes
+
+      host.shadowRoot?.appendChild(bodyNode)
+      for (const k of styleNodes) {
+        host.shadowRoot!.insertBefore(k, host.shadowRoot!.firstChild)
+      }
     } else {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
@@ -148,18 +153,12 @@ async function loadShadowDOM(
         return app.name
       }
       connectedCallback() {
-        if (styles) {
-          for (const k of styles) {
-            this.shadowRoot!.insertBefore(k, this.shadowRoot!.firstChild)
-          }
-        }
         resolve(this)
       }
       store: any
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        body && this.shadowRoot?.appendChild(body)
         this.store = loadStore(store, app)
       }
     }
