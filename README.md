@@ -7,7 +7,6 @@
 <a href="https://npmjs.com/package/berial"><img src="https://img.shields.io/npm/dt/berial.svg" alt="npm-d"></a>
 </p>
 
-
 ### Feature
 
 - lifecyecle loop

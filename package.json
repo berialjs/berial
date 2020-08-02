@@ -9,7 +9,7 @@
     "build": "rollup -c",
     "check": "run-p fmt-check lint",
     "dev": "rollup -c --watch",
-    "fix": "eslint --fix **/*.ts",
+    "fix": "run-s \"lint -- --fix\"",
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
@@ -37,9 +37,8 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.20.5",
-    "husky": "^3.0.9",
+    "husky": "^4.2.5",
     "jest": "^24.1.0",
-    "lint-staged": "^10.2.11",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rollup": "^2.23.0",
@@ -48,14 +47,9 @@
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },
-  "lint-staged": {
-    "*.ts?(x)": [
-      "npm run fix"
-    ]
-  },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run type && lint-staged"
+      "pre-commit": "run-p fmt fix; git add ."
     }
   }
 }
