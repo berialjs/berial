@@ -1,7 +1,7 @@
-import { PromiseFn, Lifecycles } from './types'
+import type { App, PromiseFn, Lifecycles } from './types'
+
 import { request } from './util'
 import { loadSandbox } from './sandbox'
-import { App } from './types'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
 const SCRIPT_URL_RE = new RegExp(
