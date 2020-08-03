@@ -9,7 +9,7 @@
 
 ### Feature
 
-- lifecyecle loop
+- lifecycle loop
 
 - shadow dom
 
