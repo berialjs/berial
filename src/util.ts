@@ -16,7 +16,7 @@ export function error(trigger: any, msg?: any): void {
   throw new Error(`[Berial: Error]: ${msg}`)
 }
 
-export function request(url: string, option?: RequestInit) {
+export function request(url: string, option?: RequestInit): Promise<string> {
   if (!window.fetch) {
     error(
       "It looks like that your browser doesn't support fetch. Polyfill is needed before you use it."
@@ -29,7 +29,7 @@ export function request(url: string, option?: RequestInit) {
   }).then((res) => res.text())
 }
 
-export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
+export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
   const definedLifecycles = new Map<any, boolean>()
   for (const item in lifecycle) {
     definedLifecycles.set(item, true)
@@ -54,7 +54,7 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles) {
   }
 }
 
-export function reverse(arr: any[]) {
+export function reverse(arr: any[]): any[] {
   let last: any
   const reversed: any[] = []
   while ((last = arr.pop())) {
