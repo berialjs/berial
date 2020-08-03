@@ -1,4 +1,4 @@
-import type { App, PromiseFn, Lifecycles } from './types'
+import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
 
 import { request } from './util'
 import { loadSandbox } from './sandbox'
@@ -37,7 +37,13 @@ const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/
 
 const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
 
-export async function importHtml(app: App) {
+export async function importHtml(
+  app: App
+): Promise<{
+  lifecycle: Lifecycles
+  styleNodes: HTMLStyleElement[]
+  bodyNode: HTMLDivElement
+}> {
   const template = await request(app.entry as string)
   const proxy = (await loadSandbox(app.host)) as ProxyConstructor
   const lifecycle = await loadScript(template, proxy, app.name)
@@ -73,7 +79,12 @@ export async function loadScript(
   return { bootstrap, unmount, mount, update }
 }
 
-function parseScript(template: string) {
+function parseScript(
+  template: string
+): {
+  scriptURLs: string[]
+  scripts: string[]
+} {
   const scriptURLs: string[] = []
   const scripts: string[] = []
   let match
@@ -96,11 +107,15 @@ function parseScript(template: string) {
   }
 }
 
-function runScript(script: string, global: ProxyConstructor, umdName: string) {
-  let bootstrap: PromiseFn,
-    mount: PromiseFn,
-    unmount: PromiseFn,
-    update: PromiseFn
+function runScript(
+  script: string,
+  global: ProxyConstructor,
+  umdName: string
+): Lifecycle {
+  let bootstrap!: PromiseFn,
+    mount!: PromiseFn,
+    unmount!: PromiseFn,
+    update!: PromiseFn
 
   eval(`(function(window) { 
     ${script};
@@ -110,16 +125,15 @@ function runScript(script: string, global: ProxyConstructor, umdName: string) {
     update = window[${umdName}].update;
   }).bind(global)(global)`)
 
-  // @ts-ignore
   return { bootstrap, mount, unmount, update }
 }
 
-async function loadCSS(template: string) {
+async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
   const { cssURLs, styles } = parseCSS(template)
   const fetchedStyles = await Promise.all(cssURLs.map((url) => request(url)))
   return toStyleNodes(fetchedStyles.concat(styles))
 
-  function toStyleNodes(styles: string[]) {
+  function toStyleNodes(styles: string[]): HTMLStyleElement[] {
     return styles.map((style) => {
       const styleNode = document.createElement('style')
       styleNode.appendChild(document.createTextNode(style))
@@ -128,7 +142,12 @@ async function loadCSS(template: string) {
   }
 }
 
-function parseCSS(template: string) {
+function parseCSS(
+  template: string
+): {
+  cssURLs: string[]
+  styles: string[]
+} {
   const cssURLs: string[] = []
   const styles: string[] = []
   let match
@@ -151,7 +170,7 @@ function parseCSS(template: string) {
   }
 }
 
-function loadBody(template: string) {
+function loadBody(template: string): HTMLDivElement {
   let bodyContent = template.match(BODY_CONTENT_RE)?.[1] ?? ''
   bodyContent = bodyContent.replace(SCRIPT_ANY_RE, scriptReplacer)
 
@@ -159,7 +178,7 @@ function loadBody(template: string) {
   div.appendChild(document.createTextNode(bodyContent))
   return div
 
-  function scriptReplacer(substring: string) {
+  function scriptReplacer(substring: string): string {
     const matchedURL = SCRIPT_URL_RE.exec(substring)
     if (matchedURL) {
       return `<!-- ${REPLACED_BY_BERIAL} Original script url: ${matchedURL[1]} -->`
