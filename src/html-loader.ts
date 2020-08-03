@@ -2,7 +2,6 @@ import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
 
 import { produce } from './proxy'
 import { request } from './util'
-import { resolve } from 'dns'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
 const SCRIPT_URL_RE = new RegExp(
