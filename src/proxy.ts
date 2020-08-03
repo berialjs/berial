@@ -1,6 +1,6 @@
 const INTERNAL_STATE_KEY = Symbol('state')
 const isArr = Array.isArray
-const isObj = (x: any) => typeof x === 'object'
+const isObj = (x: any) => Object.prototype.toString.call(x) === '[object Object]'
 
 export function produce(original: any, producer: any, host: any) {
   const draft = proxy(original, null, host)
