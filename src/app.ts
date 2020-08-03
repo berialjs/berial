@@ -1,4 +1,5 @@
-import { App, Lifecycles } from './types'
+import type { App, Lifecycles } from './types'
+
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
 

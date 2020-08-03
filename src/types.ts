@@ -1,4 +1,4 @@
-import { Status } from './app'
+import type { Status } from './app'
 
 export type Lifecycles = ToArray<Lifecycle>
 
