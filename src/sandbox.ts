@@ -1,3 +1,5 @@
+import { produce } from './proxy'
+
 export async function loadSandbox(host: any): Promise<unknown> {
   const rawWindow = window as any
   const shadowRoot = patchShadowDOM(host.shadowRoot as any)
