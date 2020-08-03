@@ -2,8 +2,8 @@ const INTERNAL_STATE_KEY = Symbol('state')
 const isArr = Array.isArray
 const isObj = (x: any) => typeof x === 'object'
 
-export function produce(original: any, producer: any) {
-  const draft = proxy(original, null)
+export function produce(original: any, producer: any, host: any) {
+  const draft = proxy(original, null, host)
   producer(draft)
   const { originalValue, draftValue, mutated } = draft[
     INTERNAL_STATE_KEY as any
@@ -12,7 +12,7 @@ export function produce(original: any, producer: any) {
   return next
 }
 
-function proxy(original: Record<string, unknown>, onWrite: any) {
+function proxy(original: Record<string, unknown>, onWrite: any, host: any) {
   const draftValue = isArr(original) ? [] : getCleanCopy(original)
   let proxiedKeyMap = Object.create(null)
   let draftState = {
@@ -23,20 +23,21 @@ function proxy(original: Record<string, unknown>, onWrite: any) {
   }
   const draft = new Proxy(original, {
     get(target, key, receiver) {
-      if (key === INTERNAL_STATE_KEY) {
-        return draftState
-      }
-      if (key in proxiedKeyMap) {
-        return proxiedKeyMap[key]
-      }
+      if (key === INTERNAL_STATE_KEY) return draftState
+
+      if (key in proxiedKeyMap) return proxiedKeyMap[key]
+
       if (isObj(original[key as any]) && original[key as any] !== null) {
         proxiedKeyMap[key] = proxyProp(original[key as any], key, draftState)
         return proxiedKeyMap[key]
       } else {
-        if (draftState.mutated) {
-          return draftValue[key]
+        if (draftState.mutated) return draftValue[key]
+        switch (key) {
+          case 'document':
+            return host.ShadowRoot
+          default:
+            return Reflect.get(target, key, receiver)
         }
-        return Reflect.get(target, key, receiver)
       }
     },
     set(target, key, value) {
@@ -44,7 +45,9 @@ function proxy(original: Record<string, unknown>, onWrite: any) {
         proxiedKeyMap[key] = proxyProp(value, key, draftState)
       }
       copyOnWrite(draftState)
+
       draftValue[key] = value
+
       return true
     },
     has(_, ...args) {
@@ -77,16 +80,20 @@ function proxy(original: Record<string, unknown>, onWrite: any) {
 
 function proxyProp(props: any, key: any, host: any) {
   const { originalValue, draftValue, onWrite } = host
-  return proxy(props, (value: any) => {
-    if (!draftValue.mutated) {
-      host.mutated = true
-      copyProps(draftValue, originalValue)
-    }
-    draftValue[key] = value
-    if (onWrite) {
-      onWrite(draftValue)
-    }
-  })
+  return proxy(
+    props,
+    (value: any) => {
+      if (!draftValue.mutated) {
+        host.mutated = true
+        copyProps(draftValue, originalValue)
+      }
+      draftValue[key] = value
+      if (onWrite) {
+        onWrite(draftValue)
+      }
+    },
+    null
+  )
 }
 
 function copyOnWrite(draftState: any) {

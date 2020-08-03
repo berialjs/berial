@@ -50,11 +50,15 @@ export async function importHtml(
   const bodyNode = loadBody(template)
 
   return new Promise((resolve) => {
-    produce(window, async (fake: any) => {
-      loadScript(template, fake, app.name).then((lifecycle) => {
-        resolve({ lifecycle, styleNodes, bodyNode })
-      })
-    })
+    produce(
+      window,
+      async (fake: any) => {
+        loadScript(template, fake, app.name).then((lifecycle) => {
+          resolve({ lifecycle, styleNodes, bodyNode })
+        })
+      },
+      app.host
+    )
   })
 }
 
