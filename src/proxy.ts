@@ -1,8 +1,13 @@
 const INTERNAL_STATE_KEY = Symbol('state')
 const isArr = (x: unknown): x is Array<any> => Array.isArray(x)
-const isObj = (x: unknown): x is object => Object.prototype.toString.call(x) === '[object Object]'
+const isObj = (x: unknown): x is object =>
+  Object.prototype.toString.call(x) === '[object Object]'
 
-export function proxy(original: Record<string, unknown>, onWrite: any, host: any) {
+export function proxy(
+  original: Record<string, unknown>,
+  onWrite: any,
+  host: any
+) {
   const draftValue = isArr(original) ? [] : getCleanCopy(original)
   let proxiedKeyMap = Object.create(null)
   let draftState = {
@@ -98,7 +103,7 @@ function copyOnWrite(draftState: any) {
 }
 
 function copyProps(target: any, source: any) {
-  if (isArr(target)) {
+  if (isArr(source)) {
     for (let i = 0; i < source.length; i++) {
       if (!(i in target)) {
         target[i] = source[i]
