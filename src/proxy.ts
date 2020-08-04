@@ -29,9 +29,10 @@ export function proxy(
         if (draftState.mutated) return draftValue[key]
         switch (key) {
           case 'document':
+            console.log(host)
             return host.ShadowRoot
           default:
-            return Reflect.get(target, key, receiver)
+            return target[key as any]
         }
       }
     },

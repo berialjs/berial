@@ -1,41 +1,34 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { ModuleFederationPlugin } = require("webpack").container;
-const path = require("path");
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path')
 
 module.exports = {
-  entry: "./src/index",
-  mode: "development",
+  entry: './src/index',
+  mode: 'production',
   devServer: {
-    contentBase: path.join(__dirname, "dist"),
+    contentBase: path.join(__dirname, 'dist'),
     port: 3002,
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    historyApiFallback: true
   },
   output: {
-    publicPath: "http://localhost:3002/",
+    publicPath: 'http://localhost:3002/',
+    libraryTarget: 'umd'
   },
   module: {
     rules: [
       {
         test: /\.jsx?$/,
-        loader: "babel-loader",
+        loader: 'babel-loader',
         exclude: /node_modules/,
         options: {
-          presets: ["@babel/preset-react"],
-        },
-      },
-    ],
+          presets: ['@babel/preset-react']
+        }
+      }
+    ]
   },
   plugins: [
-    new ModuleFederationPlugin({
-      name: "app2",
-      library: { type: "var", name: "app2" },
-      filename: "remoteEntry.js",
-      exposes: {
-        "./lifecycle":"./src/lifecycle.js"
-      },
-      shared: { react: { singleton: true }, "react-dom": { singleton: true } },
-    }),
     new HtmlWebpackPlugin({
-      template: "./index.html",
-    }),
-  ],
-};
+      template: './index.html'
+    })
+  ]
+}

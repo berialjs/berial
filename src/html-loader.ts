@@ -42,7 +42,7 @@ export async function importHtml(
 ): Promise<{
   lifecycle: Lifecycles
   styleNodes: HTMLStyleElement[]
-  bodyNode: HTMLDivElement
+  bodyNode: HTMLTemplateElement
 }> {
   const template = await request(app.entry as string)
   const styleNodes = await loadCSS(template)
@@ -119,10 +119,10 @@ function runScript(
 
   eval(`(function(window) { 
     ${script};
-    bootstrap = window[${umdName}].bootstrap;
-    mount = window[${umdName}].mount;
-    unmount = window[${umdName}].unmount;
-    update = window[${umdName}].update;
+    bootstrap = window['${umdName}'].bootstrap;
+    mount = window['${umdName}'].mount;
+    unmount = window['${umdName}'].unmount;
+    update = window['${umdName}'].update;
   }).bind(global)(global)`)
 
   return { bootstrap, mount, unmount, update }
@@ -170,13 +170,13 @@ function parseCSS(
   }
 }
 
-function loadBody(template: string): HTMLDivElement {
+function loadBody(template: string): HTMLTemplateElement {
   let bodyContent = template.match(BODY_CONTENT_RE)?.[1] ?? ''
   bodyContent = bodyContent.replace(SCRIPT_ANY_RE, scriptReplacer)
 
-  const div = document.createElement('div')
-  div.appendChild(document.createTextNode(bodyContent))
-  return div
+  const body = document.createElement('template')
+  body.innerHTML = bodyContent
+  return body
 
   function scriptReplacer(substring: string): string {
     const matchedURL = SCRIPT_URL_RE.exec(substring)
