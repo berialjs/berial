@@ -1,7 +1,7 @@
 import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
 
+import { proxy } from './proxy'
 import { request } from './util'
-import { loadSandbox } from './sandbox'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
 const SCRIPT_URL_RE = new RegExp(
@@ -45,10 +45,10 @@ export async function importHtml(
   bodyNode: HTMLDivElement
 }> {
   const template = await request(app.entry as string)
-  const proxy = (await loadSandbox(app.host)) as ProxyConstructor
-  const lifecycle = await loadScript(template, proxy, app.name)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
+  const fake = proxy(window as any, null, app.host)
+  const lifecycle = await loadScript(template, fake as any, app.name)
   return { lifecycle, styleNodes, bodyNode }
 }
 
