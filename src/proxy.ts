@@ -2,17 +2,7 @@ const INTERNAL_STATE_KEY = Symbol('state')
 const isArr = (x: unknown): x is Array<any> => Array.isArray(x)
 const isObj = (x: unknown): x is object => Object.prototype.toString.call(x) === '[object Object]'
 
-export function produce(original: any, producer: any, host: any) {
-  const draft = proxy(original, null, host)
-  producer(draft)
-  const { originalValue, draftValue, mutated } = draft[
-    INTERNAL_STATE_KEY as any
-  ] as any
-  const next = mutated ? draftValue : originalValue
-  return next
-}
-
-function proxy(original: Record<string, unknown>, onWrite: any, host: any) {
+export function proxy(original: Record<string, unknown>, onWrite: any, host: any) {
   const draftValue = isArr(original) ? [] : getCleanCopy(original)
   let proxiedKeyMap = Object.create(null)
   let draftState = {
