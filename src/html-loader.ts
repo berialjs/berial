@@ -1,6 +1,6 @@
 import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
 
-import { produce } from './proxy'
+import { proxy } from './proxy'
 import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
@@ -47,18 +47,9 @@ export async function importHtml(
   const template = await request(app.entry as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-
-  return new Promise((resolve) => {
-    produce(
-      window,
-      async (fake: any) => {
-        loadScript(template, fake, app.name).then((lifecycle) => {
-          resolve({ lifecycle, styleNodes, bodyNode })
-        })
-      },
-      app.host
-    )
-  })
+  const fake = proxy(window, app.host)
+  const lifecycle = await loadScript(template, fake, app.name)
+  return { lifecycle, styleNodes, bodyNodes }
 }
 
 export async function loadScript(
