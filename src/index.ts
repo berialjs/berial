@@ -1,5 +1,5 @@
 import { start, register } from './app'
 import { loadScript, importHtml } from './html-loader'
-import { produce } from './proxy'
+import { proxy } from './proxy'
 
-export { start, register, loadScript, importHtml, produce }
+export { start, register, loadScript, importHtml, proxy }
