@@ -4,7 +4,9 @@ function App() {
   return <div>hello fre!</div>
 }
 
-render(<App />, document.getElementById('root'))
+if (window.IS_BERIAL_SANDBOX) {
+  render(<App />, document.getElementById('root'))
+}
 
 export async function bootstrap() {
   console.log('bootstrap')
