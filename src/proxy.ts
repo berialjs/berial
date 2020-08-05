@@ -28,9 +28,6 @@ export function proxy(
       } else {
         if (draftState.mutated) return draftValue[key]
         switch (key) {
-          case 'document':
-            console.log(host)
-            return host.ShadowRoot
           default:
             return target[key as any]
         }
