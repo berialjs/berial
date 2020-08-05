@@ -3,19 +3,19 @@ import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
 import { proxy } from './proxy'
 import { request } from './util'
 
-const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
+const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
 const SCRIPT_URL_RE = new RegExp(
   '<\\s*script' +
     MATCH_ANY_OR_NO_PROPERTY.source +
     '(?:src="(.+?)")' +
     MATCH_ANY_OR_NO_PROPERTY.source +
-    '(?:\\/>|>[\\s]*<\\s*/script>)?',
+    '(?:\\/>|>[\\s]*<\\s*\\/script>)?',
   'g'
 )
 const SCRIPT_CONTENT_RE = new RegExp(
   '<\\s*script' +
     MATCH_ANY_OR_NO_PROPERTY.source +
-    '>([\\w\\W]+?)<\\s*/script>',
+    '>([\\w\\W]+?)<\\s*\\/script>',
   'g'
 )
 const MATCH_NONE_QUOTE_MARK = /[^"]/
