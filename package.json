@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "micro frontend",
   "main": "dist/berial.js",
-  "module": "dist/berial.esm.js",
+  "module": "dist/es/berial.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "rollup -c",

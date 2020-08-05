@@ -4,12 +4,12 @@ import replace from '@rollup/plugin-replace'
 export default {
   input: 'src/index.ts',
   output: [
-    // {
-    //   file: 'dist/es/berial.esm.js',
-    //   format: 'esm',
-    //   sourcemap: true,
-    //   name: 'berial'
-    // },
+    {
+      file: 'dist/es/berial.js',
+      format: 'esm',
+      sourcemap: true,
+      name: 'berial'
+    },
     {
       file: 'dist/berial.js',
       format: 'umd',

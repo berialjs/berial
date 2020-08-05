@@ -1,4 +1,4 @@
-import type { App, Lifecycles } from './types'
+import type { App, Lifecycles, Lifecycle, PromiseFn } from './types'
 
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
@@ -17,10 +17,14 @@ export enum Status {
 }
 
 let started = false
-const apps: any = new Set()
-const deps: any = new Set()
+const apps = new Set<App>()
+const deps = new Set<App>()
 
-export function register(name: string, entry: string, match: any): void {
+export function register(
+  name: string,
+  entry: ((props: App['props']) => Lifecycle) | string,
+  match: (location: Location) => boolean
+): void {
   apps.add({
     name,
     entry,
@@ -29,7 +33,7 @@ export function register(name: string, entry: string, match: any): void {
   } as App)
 }
 
-export function start(store: any): void {
+export function start(store?: Record<string, unknown>): void {
   started = true
   reroute(store || {})
 }
@@ -66,7 +70,7 @@ function getAppChanges(): {
   const unmounts: App[] = []
   const loads: App[] = []
   const mounts: App[] = []
-  apps.forEach((app: any) => {
+  apps.forEach((app) => {
     const isActive = app.match(window.location)
     switch (app.status) {
       case Status.NOT_LOADED:
@@ -85,12 +89,17 @@ function getAppChanges(): {
   return { unmounts, loads, mounts }
 }
 
-function compose(
-  fns: ((app: App) => Promise<any>)[]
-): (app: App) => Promise<void> {
+function compose(fns?: PromiseFn | PromiseFn[]): (app: App) => Promise<void> {
+  if (fns === undefined) {
+    return async (): Promise<void> => {}
+  }
+
   fns = Array.isArray(fns) ? fns : [fns]
   return (app: App): Promise<void> =>
-    fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
+    (fns as PromiseFn[]).reduce(
+      (p, fn) => p.then(() => fn(app)),
+      Promise.resolve()
+    )
 }
 
 async function runLoad(app: App, store: any): Promise<any> {
@@ -142,7 +151,7 @@ function loadStore(store: any, app: any): any {
     },
     set(target, key, val): boolean {
       target[key] = val
-      deps.forEach((app: App) => app.update(app))
+      deps.forEach((app) => app.update(app))
       return true
     }
   })

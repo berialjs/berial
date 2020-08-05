@@ -19,18 +19,19 @@ export type App = {
   loaded?: any
   store?: any
   loadLifecycle: any
-  unmount: PromiseFn
-  mount: PromiseFn
-  update: PromiseFn
-  bootstrap: PromiseFn
-}
+} & Lifecycle
 
 export type PromiseFn = (...args: any[]) => Promise<any>
 
-export type ArrayType<T> = T extends (infer U)[] ? U : T
+export type ArrayType<T> = T extends Array<infer U> ? U : T
 
 export type ToArray<T> = T extends Record<any, any>
   ? {
-      [K in keyof T]: T[K][]
+      [K in keyof T]: Array<T[K]>
     }
   : unknown
+
+export type Contains<T> = {
+  [P in keyof T]: T[P]
+} &
+  Record<PropertyKey, unknown>

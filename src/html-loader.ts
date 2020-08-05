@@ -49,12 +49,12 @@ export async function importHtml(
   const bodyNode = loadBody(template)
   const fake = proxy(window, app.host)
   const lifecycle = await loadScript(template, fake, app.name)
-  return { lifecycle, styleNodes, bodyNodes }
+  return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  global: ProxyConstructor,
+  global: any,
   name: string
 ): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
