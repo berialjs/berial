@@ -27,12 +27,7 @@ export function proxy(
         return proxiedKeyMap[key]
       } else {
         if (draftState.mutated) return draftValue[key]
-        switch (key) {
-          case 'document':
-            return host.ShadowRoot
-          default:
-            return Reflect.get(target, key, receiver)
-        }
+        return Reflect.get(target, key, receiver)
       }
     },
     set(target, key, value) {
@@ -103,7 +98,7 @@ function copyOnWrite(draftState: any) {
 }
 
 function copyProps(target: any, source: any) {
-  if (isArr(target)) {
+  if (isArr(source)) {
     for (let i = 0; i < source.length; i++) {
       if (!(i in target)) {
         target[i] = source[i]
