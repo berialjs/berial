@@ -85,7 +85,7 @@ function parseScript(
   scriptURLs: string[]
   scripts: string[]
 } {
-  const scriptURLs: string[] = ['http://localhost:3002/two-app.js']
+  const scriptURLs: string[] = []
   const scripts: string[] = []
   let match
   while ((match = SCRIPT_URL_RE.exec(template))) {
