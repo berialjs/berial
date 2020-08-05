@@ -85,7 +85,7 @@ function parseScript(
   scriptURLs: string[]
   scripts: string[]
 } {
-  const scriptURLs: string[] = []
+  const scriptURLs: string[] = ['http://localhost:3002/two-app.js']
   const scripts: string[] = []
   let match
   while ((match = SCRIPT_URL_RE.exec(template))) {
@@ -112,20 +112,21 @@ function runScript(
   global: ProxyConstructor,
   umdName: string
 ): Lifecycle {
-  let bootstrap!: PromiseFn,
-    mount!: PromiseFn,
-    unmount!: PromiseFn,
-    update!: PromiseFn
+  const resolver = new Function(`
+    return function (window){ 
+      window.IS_BERIAL_SANDBOX = true
+      with(window.IS_BERIAL_SANDBOX) {
+        try {
+          ${script}
+          return window['${umdName}']
+        }
+        catch(e) {
+          console.log(e)
+        }
+      }
+    }`)
 
-  eval(`(function(window) { 
-    ${script};
-    bootstrap = window['${umdName}'].bootstrap;
-    mount = window['${umdName}'].mount;
-    unmount = window['${umdName}'].unmount;
-    update = window['${umdName}'].update;
-  }).bind(global)(global)`)
-
-  return { bootstrap, mount, unmount, update }
+  return resolver().bind(global)(global)
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {

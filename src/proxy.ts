@@ -27,10 +27,7 @@ export function proxy(
         return proxiedKeyMap[key]
       } else {
         if (draftState.mutated) return draftValue[key]
-        switch (key) {
-          default:
-            return target[key as any]
-        }
+        return Reflect.get(target, key, receiver)
       }
     },
     set(target, key, value) {
