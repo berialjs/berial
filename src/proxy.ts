@@ -27,12 +27,7 @@ export function proxy(
         return proxiedKeyMap[key]
       } else {
         if (draftState.mutated) return draftValue[key]
-        switch (key) {
-          case 'document':
-            return host.ShadowRoot
-          default:
-            return Reflect.get(target, key, receiver)
-        }
+        return Reflect.get(target, key, receiver)
       }
     },
     set(target, key, value) {
