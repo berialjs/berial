@@ -15,7 +15,7 @@
 
 - scoped css
 
-- js sandbox
+- proxy sandbox
 
 - html loader
 
