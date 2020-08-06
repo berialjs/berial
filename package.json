@@ -14,7 +14,8 @@
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
     "serve": "serve ./demo/",
-    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
+    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -44,6 +45,7 @@
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "serve": "^11.3.2",
+    "ts-jest": "^26.1.4",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },
