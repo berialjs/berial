@@ -69,7 +69,17 @@ export async function loadScript(
   let update: PromiseFn[] = []
 
   scriptsToLoad.forEach((script) => {
-    const lifecycles = runScript(script, global, name)
+    // const lifecycles = runScript(script, global, name)
+    eval('window.IS_BERIAL_SANDBOX = true;')
+    eval(script)
+    let lifecycles
+    if (typeof exports === 'object' && typeof module === 'object') {
+      lifecycles = module.exports
+    } else if (typeof exports === 'object') {
+      lifecycles = exports[name]
+    } else {
+      lifecycles = window[name as any]
+    }
     bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
@@ -88,6 +98,7 @@ function parseScript(
   const scriptURLs: string[] = []
   const scripts: string[] = []
   let match
+  console.log(SCRIPT_URL_RE.exec(template), 'SCRIPT_URL_RE.exec(template)')
   while ((match = SCRIPT_URL_RE.exec(template))) {
     let captured = match[1].trim()
     if (!captured) continue
@@ -96,6 +107,10 @@ function parseScript(
     }
     scriptURLs.push(captured)
   }
+  console.log(
+    SCRIPT_CONTENT_RE.exec(template),
+    'SCRIPT_CONTENT_RE.exec(template)'
+  )
   while ((match = SCRIPT_CONTENT_RE.exec(template))) {
     const captured = match[1].trim()
     if (!captured) continue

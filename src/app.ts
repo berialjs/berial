@@ -166,7 +166,12 @@ async function loadShadowDOM(
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        this.store = loadStore(store, app)
+        if (typeof store === 'object') {
+          // TODO: isObject
+          this.store = loadStore(store, app)
+        } else {
+          // TODO: 非对象形式？
+        }
       }
     }
     const hasDef = window.customElements.get(app.name)
