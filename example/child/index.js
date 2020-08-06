@@ -4,7 +4,7 @@ function App() {
   return <div>hello fre!</div>
 }
 
-if (window.IS_BERIAL_SANDBOX) {
+if (!window.IS_BERIAL_SANDBOX) {
   render(<App />, document.getElementById('root'))
 }
 
