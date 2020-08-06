@@ -87,6 +87,7 @@ function parseScript(
 } {
   const scriptURLs: string[] = []
   const scripts: string[] = []
+  SCRIPT_URL_RE.lastIndex = SCRIPT_CONTENT_RE.lastIndex = 0
   let match
   while ((match = SCRIPT_URL_RE.exec(template))) {
     let captured = match[1].trim()
@@ -151,6 +152,7 @@ function parseCSS(
 } {
   const cssURLs: string[] = []
   const styles: string[] = []
+  CSS_URL_RE.lastIndex = STYLE_RE.lastIndex = 0
   let match
   while ((match = CSS_URL_RE.exec(template))) {
     let captured = match[1].trim()
