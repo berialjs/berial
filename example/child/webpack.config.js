@@ -10,14 +10,27 @@ module.exports = {
     library: 'two-app',
     libraryTarget: 'umd',
     umdNamedDefine: true,
-    publicPath: 'http://localhost:3002'
+    publicPath:
+      process.env.NODE_ENV === 'production'
+        ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
+        : 'http://localhost:3002'
   },
   module: {
     rules: [
       {
         test: /\.js$/,
         use: {
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          options: {
+            plugins: [
+              [
+                '@babel/plugin-transform-react-jsx',
+                {
+                  pragma: 'h'
+                }
+              ]
+            ]
+          }
         }
       },
       {
@@ -28,7 +41,7 @@ module.exports = {
   },
   optimization: {
     splitChunks: false,
-    minimize: false,
+    minimize: false
   },
   plugins: [
     new HtmlWebpackPlugin({
