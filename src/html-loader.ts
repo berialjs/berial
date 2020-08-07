@@ -47,7 +47,7 @@ export async function importHtml(
   const template = await request(app.entry as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const fake = proxy(window as any, null, app.host)
+  const fake = proxy(window as any, null)
   const lifecycle = await loadScript(template, fake as any, app.name)
   return { lifecycle, styleNodes, bodyNode }
 }
@@ -113,21 +113,21 @@ function runScript(
   global: ProxyConstructor,
   umdName: string
 ): Lifecycle {
-  const resolver = new Function(`
-    return function (window){ 
-      window.IS_BERIAL_SANDBOX = true
-      with(window.IS_BERIAL_SANDBOX) {
-        try {
-          ${script}
-          return window['${umdName}']
-        }
-        catch(e) {
-          console.log(e)
-        }
+  const resolver = new Function(
+    'window',
+    `
+    with(window.IS_BERIAL_SANDBOX) {
+      try {
+        ${script}
+        return window['${umdName}']
       }
-    }`)
-
-  return resolver().bind(global)(global)
+      catch(e) {
+        console.log(e)
+      }
+    }
+  `
+  )
+  return resolver.call(global, global)
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
