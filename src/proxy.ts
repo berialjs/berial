@@ -3,11 +3,7 @@ const isArr = (x: unknown): x is Array<any> => Array.isArray(x)
 const isObj = (x: unknown): x is object =>
   Object.prototype.toString.call(x) === '[object Object]'
 
-export function proxy(
-  original: Record<string, unknown>,
-  onWrite: any,
-  host: any
-) {
+export function proxy(original: Record<string, unknown>, onWrite: any) {
   const draftValue = isArr(original) ? [] : getCleanCopy(original)
   let proxiedKeyMap = Object.create(null)
   let draftState = {
@@ -70,20 +66,16 @@ export function proxy(
 
 function proxyProp(props: any, key: any, host: any) {
   const { originalValue, draftValue, onWrite } = host
-  return proxy(
-    props,
-    (value: any) => {
-      if (!draftValue.mutated) {
-        host.mutated = true
-        copyProps(draftValue, originalValue)
-      }
-      draftValue[key] = value
-      if (onWrite) {
-        onWrite(draftValue)
-      }
-    },
-    null
-  )
+  return proxy(props, (value: any) => {
+    if (!draftValue.mutated) {
+      host.mutated = true
+      copyProps(draftValue, originalValue)
+    }
+    draftValue[key] = value
+    if (onWrite) {
+      onWrite(draftValue)
+    }
+  })
 }
 
 function copyOnWrite(draftState: any) {
