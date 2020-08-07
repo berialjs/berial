@@ -116,7 +116,6 @@ function runScript(
   const resolver = new Function(
     'window',
     `
-    window.IS_BERIAL_SANDBOX = true
     with(window.IS_BERIAL_SANDBOX) {
       try {
         ${script}
