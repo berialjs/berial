@@ -26,6 +26,7 @@ export function proxy(
         proxiedKeyMap[key] = proxyProp(original[key as any], key, draftState)
         return proxiedKeyMap[key]
       } else {
+        if (key === 'navigator') return target.navigator; // TODO: 兼容性扩展
         if (draftState.mutated) return draftValue[key]
         return Reflect.get(target, key, receiver)
       }
