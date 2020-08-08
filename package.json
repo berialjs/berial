@@ -14,8 +14,7 @@
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
     "serve": "serve ./demo/",
-    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
-    "test": "jest"
+    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
   },
   "repository": {
     "type": "git",

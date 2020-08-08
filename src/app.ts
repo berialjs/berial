@@ -237,7 +237,7 @@ window.addEventListener = function (name: any, fn: any): void {
     return
   }
   // @ts-ignore
-  return originalAddEventListener.apply(this, args)
+  return originalAddEventListener.apply(this, arguments)
 }
 
 window.removeEventListener = function (name: any, fn: any): void {
@@ -253,7 +253,7 @@ function patchedUpdateState(updateState: any): () => void {
   return function (): void {
     const urlBefore = window.location.href
     // @ts-ignore
-    updateState.apply(this, arguments)
+    updateState.apply(this, args)
     const urlAfter = window.location.href
 
     if (urlBefore !== urlAfter) {
