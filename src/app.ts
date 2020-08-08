@@ -1,5 +1,4 @@
 import type { App, Lifecycles } from './types'
-
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
 
@@ -29,28 +28,33 @@ export function register(name: string, entry: string, match: any): void {
   } as App)
 }
 
-export function start(store: any): void {
+export function start(store: any = {}): void {
   started = true
-  reroute(store || {})
+  reroute(store)
 }
 
 function reroute(store: any): Promise<void> {
   const { loads, mounts, unmounts } = getAppChanges()
+
   if (started) {
     return perform()
   } else {
     return init()
   }
+
   async function init(): Promise<void> {
     await Promise.all(loads.map(runLoad))
   }
+
   async function perform(): Promise<void> {
     unmounts.map(runUnmount)
+
     loads.map(async (app) => {
       app = await runLoad(app, store)
       app = await runBootstrap(app)
       return runMount(app)
     })
+
     mounts.map(async (app) => {
       app = await runBootstrap(app)
       return runMount(app)
@@ -66,8 +70,9 @@ function getAppChanges(): {
   const unmounts: App[] = []
   const loads: App[] = []
   const mounts: App[] = []
+
   apps.forEach((app: any) => {
-    const isActive = app.match(window.location)
+    const isActive: boolean = app.match(window.location)
     switch (app.status) {
       case Status.NOT_LOADED:
       case Status.LOADING:
@@ -97,6 +102,7 @@ async function runLoad(app: App, store: any): Promise<any> {
   if (app.loaded) {
     return app.loaded
   }
+
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
     let lifecycle: Lifecycles
@@ -211,6 +217,7 @@ const routingEventsListeningTo = ['hashchange', 'popstate']
 function urlReroute(): void {
   reroute({})
 }
+
 const capturedEvents = {
   hashchange: [],
   popstate: []
@@ -220,6 +227,7 @@ window.addEventListener('hashchange', urlReroute)
 window.addEventListener('popstate', urlReroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
+
 window.addEventListener = function (name: any, fn: any): void {
   if (
     routingEventsListeningTo.indexOf(name) >= 0 &&
@@ -231,6 +239,7 @@ window.addEventListener = function (name: any, fn: any): void {
   // @ts-ignore
   return originalAddEventListener.apply(this, arguments)
 }
+
 window.removeEventListener = function (name: any, fn: any): void {
   if (routingEventsListeningTo.indexOf(name) >= 0) {
     capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
