@@ -1,4 +1,4 @@
-import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
+import type { App, PromiseFn, Lifecycles, Lifecycle, ProxyType } from './types'
 
 import { proxy } from './proxy'
 import { request } from './util'
@@ -48,13 +48,13 @@ export async function importHtml(
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
   const fake = proxy(window as any, null)
-  const lifecycle = await loadScript(template, fake as any, app.name)
+  const lifecycle = await loadScript(template, fake, app.name)
   return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  global: ProxyConstructor,
+  global: ProxyType,
   name: string
 ): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
@@ -110,7 +110,7 @@ function parseScript(
 
 function runScript(
   script: string,
-  global: ProxyConstructor,
+  global: ProxyType,
   umdName: string
 ): Lifecycle {
   const resolver = new Function(

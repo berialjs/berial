@@ -28,9 +28,9 @@ export function register(name: string, entry: string, match: any): void {
   } as App)
 }
 
-export function start(store: any): void {
+export function start(store: any = {}): void {
   started = true
-  reroute(store || {})
+  reroute(store)
 }
 
 function reroute(store: any): Promise<void> {
@@ -148,7 +148,7 @@ function loadStore(store: any, app: any): any {
     },
     set(target, key, val): boolean {
       target[key] = val
-      deps.forEach((_app: App) => _app.update(_app))
+      deps.forEach((_app: App) => app.update(_app))
       return true
     }
   })

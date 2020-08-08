@@ -34,3 +34,5 @@ export type ToArray<T> = T extends Record<any, any>
       [K in keyof T]: T[K][]
     }
   : unknown
+
+export type ProxyType = Omit<ProxyConstructor, keyof ProxyConstructor>
