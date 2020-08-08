@@ -148,7 +148,7 @@ function loadStore(store: any, app: any): any {
     },
     set(target, key, val): boolean {
       target[key] = val
-      deps.forEach((_app: App) => app.update(_app))
+      deps.forEach((app: App) => app.update(app))
       return true
     }
   })
@@ -246,14 +246,14 @@ window.removeEventListener = function (name: any, fn: any): void {
     return
   }
   //@ts-ignore
-  return originalRemoveEventListener.apply(this, args)
+  return originalRemoveEventListener.apply(this, arguments)
 }
 
 function patchedUpdateState(updateState: any): () => void {
   return function (): void {
     const urlBefore = window.location.href
     // @ts-ignore
-    updateState.apply(this, args)
+    updateState.apply(this, arguments)
     const urlAfter = window.location.href
 
     if (urlBefore !== urlAfter) {
