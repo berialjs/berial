@@ -1,6 +1,7 @@
 import type { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
+import { bridgeEvent } from './bridgeEvent'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -121,6 +122,7 @@ async function runLoad(app: App, store: any): Promise<any> {
       for (const k of styleNodes) {
         host.shadowRoot!.insertBefore(k, host.shadowRoot!.firstChild)
       }
+      bridgeEvent(host.shadowRoot)
     } else {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
