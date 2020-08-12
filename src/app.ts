@@ -253,7 +253,7 @@ function patchedUpdateState(updateState: any): () => void {
   return function (): void {
     const urlBefore = window.location.href
     // @ts-ignore
-    updateState.apply(this, args)
+    updateState.apply(this, arguments)
     const urlAfter = window.location.href
 
     if (urlBefore !== urlAfter) {
