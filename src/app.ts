@@ -122,11 +122,11 @@ async function runLoad(app: App, store: any): Promise<any> {
       for (const k of styleNodes) {
         host.shadowRoot!.insertBefore(k, host.shadowRoot!.firstChild)
       }
-      bridgeEvent(host.shadowRoot)
     } else {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
+    bridgeEvent(host.shadowRoot)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
