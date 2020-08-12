@@ -35,6 +35,7 @@ export function start(store: any = {}): void {
 
 function reroute(store: any): Promise<void> {
   const { loads, mounts, unmounts } = getAppChanges()
+  console.log(loads, mounts, unmounts)
 
   if (started) {
     return perform()
@@ -48,7 +49,6 @@ function reroute(store: any): Promise<void> {
 
   async function perform(): Promise<void> {
     unmounts.map(runUnmount)
-
     loads.map(async (app) => {
       app = await runLoad(app, store)
       app = await runBootstrap(app)
@@ -73,6 +73,7 @@ function getAppChanges(): {
 
   apps.forEach((app: any) => {
     const isActive: boolean = app.match(window.location)
+    console.log(app, isActive)
     switch (app.status) {
       case Status.NOT_LOADED:
       case Status.LOADING:
@@ -253,7 +254,7 @@ function patchedUpdateState(updateState: any): () => void {
   return function (): void {
     const urlBefore = window.location.href
     // @ts-ignore
-    updateState.apply(this, args)
+    updateState.apply(this, arguments)
     const urlAfter = window.location.href
 
     if (urlBefore !== urlAfter) {
