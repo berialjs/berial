@@ -6,14 +6,14 @@ module.exports = {
   entry: './index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
+    filename: 'one-app.js',
     library: 'one-app',
     libraryTarget: 'umd',
     umdNamedDefine: true,
     publicPath:
       process.env.NODE_ENV === 'production'
         ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
-        : 'http://localhost:3000'
+        : 'http://localhost:3001'
   },
   module: {
     rules: [
@@ -40,7 +40,8 @@ module.exports = {
     ]
   },
   optimization: {
-    splitChunks: false
+    splitChunks: false,
+    minimize: false
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -55,7 +56,7 @@ module.exports = {
     headers: { 'Access-Control-Allow-Origin': '*' },
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 3000,
+    port: 3001,
     historyApiFallback: true,
     hot: true
   }

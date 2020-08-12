@@ -1,7 +1,7 @@
 import { h, render } from 'fre'
 
 function App() {
-  return <div>hello fre!</div>
+  return <div>hello fre app - 1!</div>
 }
 
 if (!window.IS_BERIAL_SANDBOX) {
@@ -17,6 +17,8 @@ export async function mount({ host }) {
   render(<App />, host.shadowRoot.getElementById('root'))
 }
 
-export async function unmount() {
-  console.log('unmount')
+export async function unmount({ host }) {
+  console.log('unmout', host)
+  const root = host.shadowRoot.getElementById('root')
+  root.removeChild(root.firstChild)
 }
