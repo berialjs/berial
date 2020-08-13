@@ -1,6 +1,7 @@
 import type { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
+import { bridgeEvent } from './bridgeEvent'
 
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
@@ -125,6 +126,7 @@ async function runLoad(app: App, store: any): Promise<any> {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
+    bridgeEvent(host.shadowRoot)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(lifecycle.bootstrap)
     app.mount = compose(lifecycle.mount)
