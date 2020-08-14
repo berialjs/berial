@@ -52,8 +52,5 @@
     "hooks": {
       "pre-commit": "run-p fmt fix; git add ."
     }
-  },
-  "dependencies": {
-    "regenerator-runtime": "^0.13.7"
   }
 }
