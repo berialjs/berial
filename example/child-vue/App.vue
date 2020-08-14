@@ -14,6 +14,9 @@ export default {
       msg: 'Hello Vue'
     }
   },
+  beforeDestroy () {
+    console.log('beforeDestroy')
+  }
 }
 </script>
 

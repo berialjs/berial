@@ -16,11 +16,11 @@ if (!window.IS_BERIAL_SANDBOX) {
 }
 
 export async function bootstrap() {
-  console.log('child-vue bootstrap')
+  console.log('vue bootstrap')
 }
 
 export async function mount({ host }) {
-  console.log('child-vue mount')
+  console.log('vue mount')
 
   const appNode = host.shadowRoot
     .getElementById('root')
@@ -33,7 +33,7 @@ export async function mount({ host }) {
 }
 
 export async function unmount({ host }) {
-  console.log('child-vue unmout')
+  console.log('vue unmout')
 
   mountEl.$destroy()
   const root = host.shadowRoot.getElementById('root')
