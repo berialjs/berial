@@ -6,14 +6,14 @@ module.exports = {
   entry: './index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'two-app.js',
-    library: 'two-app',
+    filename: 'child-fre.js',
+    library: 'child-fre',
     libraryTarget: 'umd',
     umdNamedDefine: true,
     publicPath:
       process.env.NODE_ENV === 'production'
         ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
-        : 'http://localhost:3002'
+        : 'http://localhost:3001'
   },
   module: {
     rules: [
@@ -56,7 +56,7 @@ module.exports = {
     headers: { 'Access-Control-Allow-Origin': '*' },
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 3002,
+    port: 3001,
     historyApiFallback: true,
     hot: true
   }

@@ -1,19 +1,20 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   entry: './index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'one-app.js',
-    library: 'one-app',
+    filename: 'child-vue.js',
+    library: 'child-vue',
     libraryTarget: 'umd',
     umdNamedDefine: true,
     publicPath:
       process.env.NODE_ENV === 'production'
         ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
-        : 'http://localhost:3001'
+        : 'http://localhost:3003'
   },
   module: {
     rules: [
@@ -22,15 +23,15 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            plugins: [
-              [
-                '@babel/plugin-transform-react-jsx',
-                {
-                  pragma: 'h'
-                }
-              ]
-            ]
+            plugins: []
           }
+        }
+      },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          loaders: {}
         }
       },
       {
@@ -50,13 +51,15 @@ module.exports = {
 
     new MiniCssExtractPlugin({
       filename: '[name].css'
-    })
+    }),
+
+    new VueLoaderPlugin()
   ],
   devServer: {
     headers: { 'Access-Control-Allow-Origin': '*' },
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 3001,
+    port: 3003,
     historyApiFallback: true,
     hot: true
   }
