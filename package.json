@@ -1,6 +1,6 @@
 {
   "name": "berial",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "micro frontend",
   "main": "dist/berial.js",
   "module": "dist/berial.esm.js",
