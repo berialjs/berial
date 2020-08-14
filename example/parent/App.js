@@ -8,7 +8,7 @@ function App() {
 
   return <div>
     <header className='header'>
-      <button onClick={() => changeRoute('/')} >Fre</button>&nbsp;
+      <button onClick={() => changeRoute('/')} >Fre</button>
       <button onClick={() => changeRoute('/react')} >React</button>
       <button onClick={() => changeRoute('/vue')} >Vue</button>
     </header>

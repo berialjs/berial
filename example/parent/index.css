@@ -1,14 +1,15 @@
 .header {
   height: 60px;
-  background: #333;
   display: flex;
   align-items: center;
   padding: 0 24px;
 }
 
 .header button {
-  height: 40px;
-  min-width: 100px;
-  margin-right: 24px;
+  padding:10px 30px;
   cursor: pointer;
+  background: #000;
+  color: #fff;
+  border: none;
+  margin: 10px;
 }
