@@ -1,7 +1,10 @@
 import { h, render } from 'fre'
 
 function App() {
-  return <div>hello fre app - 1!</div>
+  return <div>
+    <h1 style={{ color: 'rgb(242, 35, 101)' }}>Hello Fre</h1>
+    <img height='300' src='http://wx2.sinaimg.cn/mw690/0060lm7Tly1ftpm5b3ihfj3096097aaj.jpg' />
+  </div>
 }
 
 if (!window.IS_BERIAL_SANDBOX) {
@@ -20,5 +23,5 @@ export async function mount({ host }) {
 export async function unmount({ host }) {
   console.log('unmout', host)
   const root = host.shadowRoot.getElementById('root')
-  root.removeChild(root.firstChild)
+  root.innerHTML = ''
 }

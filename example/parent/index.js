@@ -1,33 +1,27 @@
 import { register, start } from '../../dist/berial'
 import { h, render } from 'fre'
+import './index.css'
 
-function App() {
-
-  const changeRoute = (pathname) => {
-    history.pushState({}, '', pathname)
-  }
-
-  return <div>
-    <header>
-      <button onClick={() => changeRoute('/')} >Child-1</button>&nbsp;
-      <button onClick={() => changeRoute('/two')} >Child-2</button>
-    </header>
-    <one-app></one-app>
-    <two-app></two-app>
-  </div>
-}
+import App from './App'
 
 render(<App />, document.getElementById('app'))
 
 register(
-  'one-app',
+  'child-fre',
   'http://localhost:3001',
   (location) => location.pathname === '/'
 )
 
 register(
-  'two-app',
+  'child-react',
   'http://localhost:3002',
-  (location) => location.pathname === '/two'
+  (location) => /^\/react/.test(location.pathname)
 )
+
+register(
+  'child-vue',
+  'http://localhost:3003',
+  (location) => /^\/vue/.test(location.pathname)
+)
+
 start()
