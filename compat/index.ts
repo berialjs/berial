@@ -1,4 +1,6 @@
-export function bridgeEvent(shadowRoot: ShadowRoot) {
+import { options } from 'berial'
+
+options.bridgeEvent = function (shadowRoot: ShadowRoot) {
   const define = Object.defineProperty
   const fromNode = shadowRoot,
     toNode = shadowRoot.host
@@ -35,7 +37,7 @@ export function bridgeEvent(shadowRoot: ShadowRoot) {
   })
 }
 
-export const BRIDGE_EVENT_NAMES = [
+const BRIDGE_EVENT_NAMES = [
   'abort',
   'animationcancel',
   'animationend',

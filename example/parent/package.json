@@ -1,29 +1,10 @@
 {
-  "name": "fre-clicli-home",
-  "version": "1.0.0",
-  "description": "clicli new home page with fre",
-  "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "start": "cross-env NODE_ENV=development webpack-dev-server --mode development"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cliclitv/fre-clicli-home.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/cliclitv/fre-clicli-home/issues"
-  },
-  "homepage": "https://github.com/cliclitv/fre-clicli-home#readme",
   "dependencies": {
-    "blueimp-md5": "^2.12.0",
-    "celty": "^0.0.2",
-    "devtools-detector": "^1.0.21",
-    "fre": "^2.0.0-alpha.1",
-    "snarkdown": "^1.2.2"
+    "fre": "^2.0.0-alpha.1"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

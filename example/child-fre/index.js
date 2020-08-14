@@ -2,7 +2,7 @@ import { h, render } from 'fre'
 
 function App() {
   return <div>
-    <h1 style={{ color: 'rgb(242, 35, 101)' }}>Hello Fre</h1>
+    <h1 style={{ color: 'rgb(242, 35, 101)' }}>Hello Fre!!</h1>
     <img height='300' src='http://wx2.sinaimg.cn/mw690/0060lm7Tly1ftpm5b3ihfj3096097aaj.jpg' />
   </div>
 }
