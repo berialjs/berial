@@ -43,6 +43,6 @@ export function proxy(base: Record<string, any>, onWirte: any): ProxyType {
   })
 }
 
-function getCleanCopy(obj: Record<string, unknown>) {
+function getCleanCopy(obj: Record<string, unknown>): any {
   return Object.create(Object.getPrototypeOf(obj))
 }

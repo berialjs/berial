@@ -41,6 +41,7 @@
     "no-shadow": 1,
     "prefer-const": 0,
     "jsx-quotes": 0,
+    "prefer-rest-params":0,
     "react/prop-types": 0,
     "react/no-deprecated": 1,
     "react/display-name": 1

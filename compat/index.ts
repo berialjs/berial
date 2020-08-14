@@ -1,6 +1,6 @@
 import { options } from 'berial'
 
-options.bridgeEvent = function (shadowRoot: ShadowRoot) {
+options.bridgeEvent = function (shadowRoot: ShadowRoot): void {
   const define = Object.defineProperty
   const fromNode = shadowRoot,
     toNode = shadowRoot.host
