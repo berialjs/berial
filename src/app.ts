@@ -139,7 +139,7 @@ async function runLoad(app: App): Promise<any> {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
-    map.load && (await map.load(app))
+    map.load?.length && map.load.map(async (load: any) => await load())
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(map.bootstrap.concat(lifecycle.bootstrap))
     app.mount = compose(map.mount.concat(lifecycle.mount))

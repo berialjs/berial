@@ -6,6 +6,7 @@ export type Lifecycle = {
   bootstrap: PromiseFn
   unmount: PromiseFn
   mount: PromiseFn
+  load?: PromiseFn
 }
 
 export type App = {
