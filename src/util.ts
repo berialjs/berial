@@ -30,7 +30,8 @@ export function request(url: string, option?: RequestInit): Promise<string> {
 }
 
 export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
-  ;['setup', 'mount', 'unmount'].forEach((key) => {
+  const keys = ['setup', 'mount', 'unmount']
+  keys.forEach((key) => {
     if (!(key in lifecycle)) {
       error(
         `It looks like that you didn't export the lifecycle hook [${key}], which would cause a mistake.`
