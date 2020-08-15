@@ -1,6 +1,11 @@
-import { options } from 'berial'
+import { mixin } from 'berial'
 
-options.bridgeEvent = function (shadowRoot: ShadowRoot): void {
+export function bridgeEvent(): void {
+  mixin({ load })
+}
+
+async function load(app): Promise<void> {
+  const shadowRoot = app.host.shadowRoot
   const define = Object.defineProperty
   const fromNode = shadowRoot,
     toNode = shadowRoot.host

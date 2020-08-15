@@ -36,19 +36,16 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
   }
   if (!definedLifecycles.has('bootstrap')) {
     error(
-      __DEV__,
       `It looks like that you didn't export the lifecycle hook [bootstrap], which would cause a mistake.`
     )
   }
   if (!definedLifecycles.has('mount')) {
     error(
-      __DEV__,
       `It looks like that you didn't export the lifecycle hook [mount], which would cause a big mistake.`
     )
   }
   if (!definedLifecycles.has('unmount')) {
     error(
-      __DEV__,
       `It looks like that you didn't export the lifecycle hook [unmount], which would cause a mistake.`
     )
   }
