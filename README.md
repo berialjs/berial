@@ -19,7 +19,7 @@
 
 - html loader
 
-- global store
+- mixins
 
 ### Use
 
@@ -45,6 +45,24 @@ register(
 start()
 ```
 
+### mixins
+
+```js
+import { mixin } from 'berail'
+
+mixin({
+  bootstrap: () => {},
+  mount: () => {},
+  unmount: () => {}
+})
+```
+
+mixins will apply all apps
+
 ### License
 
 MIT ©yisar ©h-a-n-a
+
+```
+
+```
