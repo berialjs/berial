@@ -121,6 +121,7 @@ async function runLoad(app: App): Promise<any> {
     let lifecycle: Lifecycles
     let bodyNode: HTMLTemplateElement
     let styleNodes: HTMLStyleElement[]
+    let map = mapMixin()
     let host = (await loadShadowDOM(app)) as any // null shadow dom
     app.host = host
     if (typeof app.entry === 'string') {
@@ -138,8 +139,8 @@ async function runLoad(app: App): Promise<any> {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
+    map.load && (await map.load(app))
     app.status = Status.NOT_BOOTSTRAPPED
-    const map = mapMixin()
     app.bootstrap = compose(map.bootstrap.concat(lifecycle.bootstrap))
     app.mount = compose(map.mount.concat(lifecycle.mount))
     app.unmount = compose(map.unmount.concat(lifecycle.unmount))
@@ -151,11 +152,13 @@ async function runLoad(app: App): Promise<any> {
 
 function mapMixin() {
   const out: any = {
+    load: [],
     bootstrap: [],
     mount: [],
     unmouunt: []
   }
   mixins.forEach((item: any) => {
+    item.load && out.load.push(item.load)
     item.bootstrap && out.bootstrap.push(item.bootstrap)
     item.mount && out.mount.push(item.mount)
     item.unmount && out.unmount.push(item.unmount)
@@ -221,8 +224,8 @@ const captured = {
 
 window.addEventListener('hashchange', reroute)
 window.addEventListener('popstate', reroute)
-const originalAddEventListener = window.addEventListener
-const originalRemoveEventListener = window.removeEventListener
+const oldAEL = window.addEventListener
+const oldREL = window.removeEventListener
 
 window.addEventListener = function (name: any, fn: any): void {
   if (
@@ -233,7 +236,7 @@ window.addEventListener = function (name: any, fn: any): void {
     return
   }
   // @ts-ignore
-  return originalAddEventListener.apply(this, arguments)
+  return oldAEL.apply(this, arguments)
 }
 
 window.removeEventListener = function (name: any, fn: any): void {
@@ -242,7 +245,7 @@ window.removeEventListener = function (name: any, fn: any): void {
     return
   }
   //@ts-ignore
-  return originalRemoveEventListener.apply(this, arguments)
+  return oldREL.apply(this, arguments)
 }
 
 function patchedUpdateState(updateState: any): () => void {
