@@ -15,8 +15,8 @@ if (!window.IS_BERIAL_SANDBOX) {
   })
 }
 
-export async function bootstrap() {
-  console.log('vue bootstrap')
+export async function setup() {
+  console.log('vue setup')
 }
 
 export async function mount({ host }) {

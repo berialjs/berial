@@ -11,6 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "berial": "^0.0.3"
+    "berial": "^0.0.4"
   }
 }
