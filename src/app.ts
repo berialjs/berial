@@ -28,7 +28,7 @@ export function register(name: string, entry: string, match: any): void {
   } as App)
 }
 
-export function start() {
+export function start(): void {
   started = true
   reroute()
 }
@@ -150,7 +150,7 @@ async function runLoad(app: App): Promise<any> {
   return app.loaded
 }
 
-function mapMixin() {
+function mapMixin(): Lifecycles {
   const out: any = {
     load: [],
     bootstrap: [],
