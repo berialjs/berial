@@ -48,7 +48,7 @@ start()
 ### mixins
 
 ```js
-import { mixin } from 'berail'
+import { mixin } from 'berial'
 
 mixin({
   bootstrap: () => {},
@@ -62,7 +62,3 @@ mixins will apply all apps
 ### License
 
 MIT ©yisar ©h-a-n-a
-
-```
-
-```
