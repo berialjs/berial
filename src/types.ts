@@ -6,7 +6,6 @@ export type Lifecycle = {
   bootstrap: PromiseFn
   unmount: PromiseFn
   mount: PromiseFn
-  update: PromiseFn
 }
 
 export type App = {

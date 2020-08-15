@@ -66,17 +66,14 @@ export async function loadScript(
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  let update: PromiseFn[] = []
-
   scriptsToLoad.forEach((script) => {
     const lifecycles = runScript(script, global, name)
     bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
-    update = [...update, lifecycles.update]
   })
 
-  return { bootstrap, unmount, mount, update }
+  return { bootstrap, unmount, mount }
 }
 
 function parseScript(

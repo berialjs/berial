@@ -1,7 +1,6 @@
 import type { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
-export const options = {} as any
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
   LOADING = 'LOADING',
@@ -17,7 +16,8 @@ export enum Status {
 
 let started = false
 const apps: any = new Set()
-const deps: any = new Set()
+const mixins: any = new Set()
+const plugins: any = new Set()
 
 export function register(name: string, entry: string, match: any): void {
   apps.add({
@@ -28,12 +28,25 @@ export function register(name: string, entry: string, match: any): void {
   } as App)
 }
 
-export function start(store: any = {}): void {
+export function start() {
   started = true
-  reroute(store)
+  reroute()
 }
 
-function reroute(store: any): Promise<void> {
+export function use(plugin: () => any): void {
+  if (!plugins.has(plugin)) {
+    plugins.add(plugin)
+    plugin()
+  }
+}
+
+export function mixin(mix: any): void {
+  if (mixins.has(mix)) {
+    mixins.add(mix)
+  }
+}
+
+function reroute(): Promise<void> {
   const { loads, mounts, unmounts } = getAppChanges()
 
   if (started) {
@@ -50,7 +63,7 @@ function reroute(store: any): Promise<void> {
     unmounts.map(runUnmount)
 
     loads.map(async (app) => {
-      app = await runLoad(app, store)
+      app = await runLoad(app)
       app = await runBootstrap(app)
       return runMount(app)
     })
@@ -98,7 +111,7 @@ function compose(
     fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
 }
 
-async function runLoad(app: App, store: any): Promise<any> {
+async function runLoad(app: App): Promise<any> {
   if (app.loaded) {
     return app.loaded
   }
@@ -108,7 +121,7 @@ async function runLoad(app: App, store: any): Promise<any> {
     let lifecycle: Lifecycles
     let bodyNode: HTMLTemplateElement
     let styleNodes: HTMLStyleElement[]
-    let host = (await loadShadowDOM(app, store)) as any // null shadow dom
+    let host = (await loadShadowDOM(app)) as any // null shadow dom
     app.host = host
     if (typeof app.entry === 'string') {
       const exports = await importHtml(app)
@@ -125,42 +138,32 @@ async function runLoad(app: App, store: any): Promise<any> {
       lifecycle = (await app.entry(app)) as any
       lifecycleCheck(lifecycle)
     }
-    options.bridgeEvent && options.bridgeEvent(host.shadowRoot)
     app.status = Status.NOT_BOOTSTRAPPED
-    app.bootstrap = compose(lifecycle.bootstrap)
-    app.mount = compose(lifecycle.mount)
-    app.unmount = compose(lifecycle.unmount)
-    app.update = compose(lifecycle.update)
+    const map = mapMixin()
+    app.bootstrap = compose(map.bootstrap.concat(lifecycle.bootstrap))
+    app.mount = compose(map.mount.concat(lifecycle.mount))
+    app.unmount = compose(map.unmount.concat(lifecycle.unmount))
     delete app.loaded
     return app
   })
   return app.loaded
 }
 
-function loadStore(store: any, app: any): any {
-  return new Proxy(store, {
-    get(target, key): any {
-      const has = app.deps.has(app)
-      if (!has) {
-        // collect once
-        deps.add(app)
-      }
-      return target[key]
-    },
-    set(target, key, val): boolean {
-      target[key] = val
-      deps.forEach((app: App) => app.update(app))
-      return true
-    }
+function mapMixin() {
+  const out: any = {
+    bootstrap: [],
+    mount: [],
+    unmouunt: []
+  }
+  mixins.forEach((item: any) => {
+    item.bootstrap && out.bootstrap.push(item.bootstrap)
+    item.mount && out.mount.push(item.mount)
+    item.unmount && out.unmount.push(item.unmount)
   })
+  return out
 }
 
-async function loadShadowDOM(
-  app: App,
-  store: any,
-  body?: HTMLElement,
-  styles?: HTMLElement[]
-): Promise<HTMLElement> {
+async function loadShadowDOM(app: App): Promise<HTMLElement> {
   return new Promise<HTMLElement>((resolve) => {
     class Berial extends HTMLElement {
       static get tag(): string {
@@ -169,11 +172,9 @@ async function loadShadowDOM(
       connectedCallback(): void {
         resolve(this)
       }
-      store: any
       constructor() {
         super()
         this.attachShadow({ mode: 'open' })
-        this.store = loadStore(store, app)
       }
     }
     const hasDef = window.customElements.get(app.name)
@@ -213,28 +214,22 @@ async function runMount(app: App): Promise<App> {
   return app
 }
 
-const routingEventsListeningTo = ['hashchange', 'popstate']
-
-function urlReroute(): void {
-  reroute({})
-}
-
-const capturedEvents = {
+const captured = {
   hashchange: [],
   popstate: []
 } as any
 
-window.addEventListener('hashchange', urlReroute)
-window.addEventListener('popstate', urlReroute)
+window.addEventListener('hashchange', reroute)
+window.addEventListener('popstate', reroute)
 const originalAddEventListener = window.addEventListener
 const originalRemoveEventListener = window.removeEventListener
 
 window.addEventListener = function (name: any, fn: any): void {
   if (
-    routingEventsListeningTo.indexOf(name) >= 0 &&
-    !capturedEvents[name].some((l: any) => l == fn)
+    (name === 'hashchange' || name === 'popstate') &&
+    !captured[name].some((l: any) => l == fn)
   ) {
-    capturedEvents[name].push(fn)
+    captured[name].push(fn)
     return
   }
   // @ts-ignore
@@ -242,8 +237,8 @@ window.addEventListener = function (name: any, fn: any): void {
 }
 
 window.removeEventListener = function (name: any, fn: any): void {
-  if (routingEventsListeningTo.indexOf(name) >= 0) {
-    capturedEvents[name] = capturedEvents[name].filter((l: any) => l !== fn)
+  if (name === 'hashchange' || name === 'popstate') {
+    captured[name] = captured[name].filter((l: any) => l !== fn)
     return
   }
   //@ts-ignore
