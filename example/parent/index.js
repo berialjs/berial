@@ -1,4 +1,4 @@
-import { register, start } from '../../dist/berial'
+import { register } from '../../dist/berial'
 import { h, render } from 'fre'
 import './index.css'
 
@@ -23,5 +23,3 @@ register(
   'http://localhost:3003',
   (location) => /^\/vue/.test(location.pathname)
 )
-
-start()

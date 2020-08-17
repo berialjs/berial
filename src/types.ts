@@ -11,7 +11,7 @@ export type Lifecycle = {
 
 export type App = {
   name: string
-  entry: ((props: App['props']) => Lifecycle) | string
+  url: ((props: App['props']) => Lifecycle) | string
   match: (location: Location) => boolean
   host: HTMLElement
   props: Record<string, unknown>

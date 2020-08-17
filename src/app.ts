@@ -1,9 +1,10 @@
-import type { App, Lifecycles } from './types'
+import type { App } from './types'
+import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
-  CREATING = 'CREATING',
+  LOADING = 'LOADING',
   NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED',
   BOOTSTRAPPING = 'BOOTSTRAPPING',
   NOT_MOUNTED = 'NOT_MOUNTED',
@@ -16,13 +17,11 @@ export enum Status {
 
 let started = false
 const apps: any = new Set()
-const mixins: any = new Set()
-const plugins: any = new Set()
 
-export function register(name: string, entry: string, match: any): void {
+export function register(name: string, url: string, match: any): void {
   apps.add({
     name,
-    entry,
+    url,
     match,
     status: Status.NOT_LOADED
   } as App)
@@ -33,27 +32,10 @@ export function start(): void {
   reroute()
 }
 
-export function use(plugin: () => any): void {
-  if (!plugins.has(plugin)) {
-    plugins.add(plugin)
-    plugin()
-  }
-}
-
-export function mixin(mix: any): void {
-  if (!mixins.has(mix)) {
-    mixins.add(mix)
-  }
-}
-
 function reroute(): Promise<void> {
   const { loads, mounts, unmounts } = getAppChanges()
 
-  if (started) {
-    return perform()
-  } else {
-    return init()
-  }
+  return started ? perform() : init()
 
   async function init(): Promise<void> {
     await Promise.all(loads.map(runLoad))
@@ -88,7 +70,7 @@ function getAppChanges(): {
     const isActive: boolean = app.match(window.location)
     switch (app.status) {
       case Status.NOT_LOADED:
-      case Status.CREATING:
+      case Status.LOADING:
         isActive && loads.push(app)
         break
       case Status.NOT_BOOTSTRAPPED:
@@ -114,39 +96,22 @@ function compose(
 async function runLoad(app: App): Promise<any> {
   if (app.loaded) return app.loaded
   app.loaded = Promise.resolve().then(async () => {
-    app.status = Status.CREATING
+    app.status = Status.LOADING
     let mixinLife = mapMixin()
     app.host = (await loadShadowDOM(app)) as any
     const { lifecycle: selfLife, bodyNode, styleNodes } = await importHtml(app)
+    lifecycleCheck(selfLife)
     app.host.shadowRoot?.appendChild(bodyNode.content.cloneNode(true))
     for (const k of styleNodes)
       app.host.shadowRoot!.insertBefore(k, app.host.shadowRoot!.firstChild)
-    mixinLife.load?.length &&
-      mixinLife.load.forEach(async (load: any) => await load(app))
     app.status = Status.NOT_BOOTSTRAPPED
-    app.bootstrap = compose(mixinLife.bootstrap.concat(selfLife.bootstrap))
-    app.mount = compose(mixinLife.mount.concat(selfLife.mount))
-    app.unmount = compose(mixinLife.unmount.concat(selfLife.unmount))
+    app.bootstrap = compose(selfLife.bootstrap.concat(mixinLife.bootstrap))
+    app.mount = compose(selfLife.mount.concat(mixinLife.mount))
+    app.unmount = compose(selfLife.unmount.concat(mixinLife.unmount))
     delete app.loaded
     return app
   })
   return app.loaded
-}
-
-function mapMixin(): Lifecycles {
-  const out: any = {
-    load: [],
-    bootstrap: [],
-    mount: [],
-    unmount: []
-  }
-  mixins.forEach((item: any) => {
-    item.load && out.load.push(item.load)
-    item.bootstrap && out.bootstrap.push(item.bootstrap)
-    item.mount && out.mount.push(item.mount)
-    item.unmount && out.unmount.push(item.unmount)
-  })
-  return out
 }
 
 async function loadShadowDOM(app: App): Promise<HTMLElement> {
@@ -231,7 +196,7 @@ window.removeEventListener = function (name: any, fn: any): void {
   return oldREL.apply(this, arguments)
 }
 
-function patchedUpdateState(updateState: any): () => void {
+function polyfillRoute(updateState: any): () => void {
   return function (): void {
     const urlBefore = window.location.href
     // @ts-ignore
@@ -245,5 +210,5 @@ function patchedUpdateState(updateState: any): () => void {
   }
 }
 
-window.history.pushState = patchedUpdateState(window.history.pushState)
-window.history.replaceState = patchedUpdateState(window.history.replaceState)
+window.history.pushState = polyfillRoute(window.history.pushState)
+window.history.replaceState = polyfillRoute(window.history.replaceState)

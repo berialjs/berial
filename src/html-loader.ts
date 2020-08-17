@@ -44,7 +44,7 @@ export async function importHtml(
   styleNodes: HTMLStyleElement[]
   bodyNode: HTMLTemplateElement
 }> {
-  const template = await request(app.entry as string)
+  const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
   const fake = proxy(window as any, null)
