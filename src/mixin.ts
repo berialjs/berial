@@ -3,10 +3,10 @@ import type { Lifecycles } from './types'
 const mixins: any = new Set()
 const plugins: any = new Set()
 
-export function use(plugin: () => any): void {
+export function use(plugin: (args: any) => any, ...args: any): void {
   if (!plugins.has(plugin)) {
     plugins.add(plugin)
-    plugin()
+    plugin(args)
   }
 }
 
