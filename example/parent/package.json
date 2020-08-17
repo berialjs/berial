@@ -1,7 +1,15 @@
 {
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "start": "cross-env NODE_ENV=development webpack-dev-server --mode development"
+    "start": "concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
+    "start:parent": "cross-env NODE_ENV=development webpack-dev-server --mode development",
+    "start:child-fre": "cd ../child-fre && npm start",
+    "start:child-react": "cd ../child-react && npm start",
+    "start:child-vue": "cd ../child-vue && npm start",
+    "install:all": "npm i && concurrently \"npm run install:child-fre\" \"npm run install:child-react\" \"npm run install:child-vue\"",
+    "install:child-fre": "cd ../child-fre && npm i",
+    "install:child-react": "cd ../child-react && npm i",
+    "install:child-vue": "cd ../child-vue && npm i"
   },
   "dependencies": {
     "fre": "^2.0.0-alpha.1"
@@ -11,6 +19,7 @@
     "@babel/plugin-transform-react-jsx": "^7.3.0",
     "@babel/preset-env": "^7.6.3",
     "babel-loader": "^8.0.6",
+    "concurrently": "^5.3.0",
     "cross-env": "^6.0.3",
     "css-loader": "^3.2.0",
     "html-webpack-plugin": "^3.2.0",
