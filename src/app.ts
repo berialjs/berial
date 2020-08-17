@@ -2,10 +2,10 @@ import type { App, Lifecycles } from './types'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
 export enum Status {
-  NOT_CREATED = 'NOT_CREATED',
+  NOT_LOADED = 'NOT_LOADED',
   CREATING = 'CREATING',
-  NOT_SETUPPED = 'NOT_SETUPPED',
-  SETUPPING = 'SETUPPING',
+  NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED',
+  BOOTSTRAPPING = 'BOOTSTRAPPING',
   NOT_MOUNTED = 'NOT_MOUNTED',
   MOUNTING = 'MOUNTING',
   MOUNTED = 'MOUNTED',
@@ -24,7 +24,7 @@ export function register(name: string, entry: string, match: any): void {
     name,
     entry,
     match,
-    status: Status.NOT_CREATED
+    status: Status.NOT_LOADED
   } as App)
 }
 
@@ -47,7 +47,7 @@ export function mixin(mix: any): void {
 }
 
 function reroute(): Promise<void> {
-  const { creates, mounts, unmounts } = getAppChanges()
+  const { loads, mounts, unmounts } = getAppChanges()
 
   if (started) {
     return perform()
@@ -56,20 +56,20 @@ function reroute(): Promise<void> {
   }
 
   async function init(): Promise<void> {
-    await Promise.all(creates.map(runCreate))
+    await Promise.all(loads.map(runLoad))
   }
 
   async function perform(): Promise<void> {
     unmounts.map(runUnmount)
 
-    creates.map(async (app) => {
-      app = await runCreate(app)
-      app = await runSetup(app)
+    loads.map(async (app) => {
+      app = await runLoad(app)
+      app = await runBootstrap(app)
       return runMount(app)
     })
 
     mounts.map(async (app) => {
-      app = await runSetup(app)
+      app = await runBootstrap(app)
       return runMount(app)
     })
   }
@@ -77,22 +77,22 @@ function reroute(): Promise<void> {
 
 function getAppChanges(): {
   unmounts: App[]
-  creates: App[]
+  loads: App[]
   mounts: App[]
 } {
   const unmounts: App[] = []
-  const creates: App[] = []
+  const loads: App[] = []
   const mounts: App[] = []
 
   apps.forEach((app: any) => {
     const isActive: boolean = app.match(window.location)
     switch (app.status) {
-      case Status.NOT_CREATED:
+      case Status.NOT_LOADED:
       case Status.CREATING:
-        isActive && creates.push(app)
+        isActive && loads.push(app)
         break
-      case Status.NOT_SETUPPED:
-      case Status.SETUPPING:
+      case Status.NOT_BOOTSTRAPPED:
+      case Status.BOOTSTRAPPING:
       case Status.NOT_MOUNTED:
         isActive && mounts.push(app)
         break
@@ -100,7 +100,7 @@ function getAppChanges(): {
         !isActive && unmounts.push(app)
     }
   })
-  return { unmounts, creates, mounts }
+  return { unmounts, loads, mounts }
 }
 
 function compose(
@@ -111,45 +111,45 @@ function compose(
     fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
 }
 
-async function runCreate(app: App): Promise<any> {
-  if (app.created) return app.created
-  app.created = Promise.resolve().then(async () => {
+async function runLoad(app: App): Promise<any> {
+  if (app.loaded) return app.loaded
+  app.loaded = Promise.resolve().then(async () => {
     app.status = Status.CREATING
     let mixinLife = mapMixin()
-    app.host = (await createShadowDOM(app)) as any
+    app.host = (await loadShadowDOM(app)) as any
     const { lifecycle: selfLife, bodyNode, styleNodes } = await importHtml(app)
     app.host.shadowRoot?.appendChild(bodyNode.content.cloneNode(true))
     for (const k of styleNodes)
       app.host.shadowRoot!.insertBefore(k, app.host.shadowRoot!.firstChild)
-    mixinLife.create?.length &&
-      mixinLife.create.forEach(async (create: any) => await create(app))
-    app.status = Status.NOT_SETUPPED
-    app.setup = compose(mixinLife.setup.concat(selfLife.setup))
+    mixinLife.load?.length &&
+      mixinLife.load.forEach(async (load: any) => await load(app))
+    app.status = Status.NOT_BOOTSTRAPPED
+    app.bootstrap = compose(mixinLife.bootstrap.concat(selfLife.bootstrap))
     app.mount = compose(mixinLife.mount.concat(selfLife.mount))
     app.unmount = compose(mixinLife.unmount.concat(selfLife.unmount))
-    delete app.created
+    delete app.loaded
     return app
   })
-  return app.created
+  return app.loaded
 }
 
 function mapMixin(): Lifecycles {
   const out: any = {
-    create: [],
-    setup: [],
+    load: [],
+    bootstrap: [],
     mount: [],
     unmount: []
   }
   mixins.forEach((item: any) => {
-    item.create && out.create.push(item.create)
-    item.setup && out.setup.push(item.setup)
+    item.load && out.load.push(item.load)
+    item.bootstrap && out.bootstrap.push(item.bootstrap)
     item.mount && out.mount.push(item.mount)
     item.unmount && out.unmount.push(item.unmount)
   })
   return out
 }
 
-async function createShadowDOM(app: App): Promise<HTMLElement> {
+async function loadShadowDOM(app: App): Promise<HTMLElement> {
   return new Promise<HTMLElement>((resolve) => {
     class Berial extends HTMLElement {
       static get tag(): string {
@@ -180,12 +180,12 @@ async function runUnmount(app: App): Promise<App> {
   return app
 }
 
-async function runSetup(app: App): Promise<App> {
-  if (app.status !== Status.NOT_SETUPPED) {
+async function runBootstrap(app: App): Promise<App> {
+  if (app.status !== Status.NOT_BOOTSTRAPPED) {
     return app
   }
-  app.status = Status.SETUPPING
-  await app.setup(app)
+  app.status = Status.BOOTSTRAPPING
+  await app.bootstrap(app)
   app.status = Status.NOT_MOUNTED
   return app
 }

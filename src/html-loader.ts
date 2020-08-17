@@ -63,17 +63,17 @@ export async function loadScript(
   )
   const scriptsToLoad = fetchedScripts.concat(scripts)
 
-  let setup: PromiseFn[] = []
+  let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
   scriptsToLoad.forEach((script) => {
     const lifecycles = runScript(script, global, name)
-    setup = [...setup, lifecycles.setup]
+    bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
   })
 
-  return { setup, unmount, mount }
+  return { bootstrap, unmount, mount }
 }
 
 function parseScript(
