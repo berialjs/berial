@@ -6,8 +6,8 @@ if (!window.IS_BERIAL_SANDBOX) {
   ReactDOM.render(<App />, document.getElementById('root'))
 }
 
-export async function setup() {
-  console.log('react setup')
+export async function bootstrap() {
+  console.log('react bootstrap')
 }
 
 export async function mount({ host }) {

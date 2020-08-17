@@ -11,8 +11,8 @@ if (!window.IS_BERIAL_SANDBOX) {
   render(<App />, document.getElementById('root'))
 }
 
-export async function setup() {
-  console.log('fre setup')
+export async function bootstrap() {
+  console.log('fre bootstrap')
 }
 
 export async function mount({ host }) {
