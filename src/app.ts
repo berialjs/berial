@@ -41,7 +41,7 @@ export function use(plugin: () => any): void {
 }
 
 export function mixin(mix: any): void {
-  if (mixins.has(mix)) {
+  if (!mixins.has(mix)) {
     mixins.add(mix)
   }
 }
