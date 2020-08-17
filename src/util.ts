@@ -30,28 +30,14 @@ export function request(url: string, option?: RequestInit): Promise<string> {
 }
 
 export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
-  const definedLifecycles = new Map<any, boolean>()
-  for (const item in lifecycle) {
-    definedLifecycles.set(item, true)
-  }
-  if (!definedLifecycles.has('bootstrap')) {
-    error(
-      __DEV__,
-      `It looks like that you didn't export the lifecycle hook [bootstrap], which would cause a mistake.`
-    )
-  }
-  if (!definedLifecycles.has('mount')) {
-    error(
-      __DEV__,
-      `It looks like that you didn't export the lifecycle hook [mount], which would cause a big mistake.`
-    )
-  }
-  if (!definedLifecycles.has('unmount')) {
-    error(
-      __DEV__,
-      `It looks like that you didn't export the lifecycle hook [unmount], which would cause a mistake.`
-    )
-  }
+  const keys = ['setup', 'mount', 'unmount']
+  keys.forEach((key) => {
+    if (!(key in lifecycle)) {
+      error(
+        `It looks like that you didn't export the lifecycle hook [${key}], which would cause a mistake.`
+      )
+    }
+  })
 }
 
 export function reverse(arr: any[]): any[] {

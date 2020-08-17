@@ -1,21 +1,21 @@
-import type { App, PromiseFn, Lifecycles, Lifecycle } from './types'
+import type { App, PromiseFn, Lifecycles, Lifecycle, ProxyType } from './types'
 
 import { proxy } from './proxy'
 import { request } from './util'
 
-const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s/]*/
+const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
 const SCRIPT_URL_RE = new RegExp(
   '<\\s*script' +
     MATCH_ANY_OR_NO_PROPERTY.source +
     '(?:src="(.+?)")' +
     MATCH_ANY_OR_NO_PROPERTY.source +
-    '(?:\\/>|>[\\s]*<\\s*/script>)?',
+    '(?:\\/>|>[\\s]*<\\s*\\/script>)?',
   'g'
 )
 const SCRIPT_CONTENT_RE = new RegExp(
   '<\\s*script' +
     MATCH_ANY_OR_NO_PROPERTY.source +
-    '>([\\w\\W]+?)<\\s*/script>',
+    '>([\\w\\W]+?)<\\s*\\/script>',
   'g'
 )
 const MATCH_NONE_QUOTE_MARK = /[^"]/
@@ -42,19 +42,19 @@ export async function importHtml(
 ): Promise<{
   lifecycle: Lifecycles
   styleNodes: HTMLStyleElement[]
-  bodyNode: HTMLDivElement
+  bodyNode: HTMLTemplateElement
 }> {
   const template = await request(app.entry as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const fake = proxy(window, app.host)
+  const fake = proxy(window as any, null)
   const lifecycle = await loadScript(template, fake, app.name)
-  return { lifecycle, styleNodes, bodyNodes }
+  return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  global: ProxyConstructor,
+  global: ProxyType,
   name: string
 ): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
@@ -63,20 +63,17 @@ export async function loadScript(
   )
   const scriptsToLoad = fetchedScripts.concat(scripts)
 
-  let bootstrap: PromiseFn[] = []
+  let setup: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  let update: PromiseFn[] = []
-
   scriptsToLoad.forEach((script) => {
     const lifecycles = runScript(script, global, name)
-    bootstrap = [...bootstrap, lifecycles.bootstrap]
+    setup = [...setup, lifecycles.setup]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
-    update = [...update, lifecycles.update]
   })
 
-  return { bootstrap, unmount, mount, update }
+  return { setup, unmount, mount }
 }
 
 function parseScript(
@@ -87,6 +84,7 @@ function parseScript(
 } {
   const scriptURLs: string[] = []
   const scripts: string[] = []
+  SCRIPT_URL_RE.lastIndex = SCRIPT_CONTENT_RE.lastIndex = 0
   let match
   while ((match = SCRIPT_URL_RE.exec(template))) {
     let captured = match[1].trim()
@@ -109,23 +107,24 @@ function parseScript(
 
 function runScript(
   script: string,
-  global: ProxyConstructor,
+  global: ProxyType,
   umdName: string
 ): Lifecycle {
-  let bootstrap!: PromiseFn,
-    mount!: PromiseFn,
-    unmount!: PromiseFn,
-    update!: PromiseFn
-
-  eval(`(function(window) { 
-    ${script};
-    bootstrap = window[${umdName}].bootstrap;
-    mount = window[${umdName}].mount;
-    unmount = window[${umdName}].unmount;
-    update = window[${umdName}].update;
-  }).bind(global)(global)`)
-
-  return { bootstrap, mount, unmount, update }
+  const resolver = new Function(
+    'window',
+    `
+    with(window.IS_BERIAL_SANDBOX) {
+      try {
+        ${script}
+        return window['${umdName}']
+      }
+      catch(e) {
+        console.log(e)
+      }
+    }
+  `
+  )
+  return resolver.call(global, global)
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
@@ -150,6 +149,7 @@ function parseCSS(
 } {
   const cssURLs: string[] = []
   const styles: string[] = []
+  CSS_URL_RE.lastIndex = STYLE_RE.lastIndex = 0
   let match
   while ((match = CSS_URL_RE.exec(template))) {
     let captured = match[1].trim()
@@ -170,13 +170,13 @@ function parseCSS(
   }
 }
 
-function loadBody(template: string): HTMLDivElement {
+function loadBody(template: string): HTMLTemplateElement {
   let bodyContent = template.match(BODY_CONTENT_RE)?.[1] ?? ''
   bodyContent = bodyContent.replace(SCRIPT_ANY_RE, scriptReplacer)
 
-  const div = document.createElement('div')
-  div.appendChild(document.createTextNode(bodyContent))
-  return div
+  const body = document.createElement('template')
+  body.innerHTML = bodyContent
+  return body
 
   function scriptReplacer(substring: string): string {
     const matchedURL = SCRIPT_URL_RE.exec(substring)

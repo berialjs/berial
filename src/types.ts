@@ -3,10 +3,10 @@ import type { Status } from './app'
 export type Lifecycles = ToArray<Lifecycle>
 
 export type Lifecycle = {
-  bootstrap: PromiseFn
+  setup: PromiseFn
   unmount: PromiseFn
   mount: PromiseFn
-  update: PromiseFn
+  create?: PromiseFn
 }
 
 export type App = {
@@ -16,13 +16,13 @@ export type App = {
   host: HTMLElement
   props: Record<string, unknown>
   status: Status
-  loaded?: any
+  created?: any
   store?: any
   loadLifecycle: any
   unmount: PromiseFn
   mount: PromiseFn
   update: PromiseFn
-  bootstrap: PromiseFn
+  setup: PromiseFn
 }
 
 export type PromiseFn = (...args: any[]) => Promise<any>
@@ -34,3 +34,5 @@ export type ToArray<T> = T extends Record<any, any>
       [K in keyof T]: T[K][]
     }
   : unknown
+
+export type ProxyType = Omit<ProxyConstructor, keyof ProxyConstructor>

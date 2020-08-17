@@ -1,0 +1,15 @@
+.header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.header button {
+  padding:10px 30px;
+  cursor: pointer;
+  background: #000;
+  color: #fff;
+  border: none;
+  margin: 10px;
+}
