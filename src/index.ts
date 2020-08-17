@@ -1,4 +1,5 @@
-import { start, register, mixin, use } from './app'
+import { start, register } from './app'
+import { mixin, use } from './mixin'
 import { loadScript, importHtml } from './html-loader'
 import { proxy } from './proxy'
 

@@ -1,10 +1,10 @@
 import { mixin } from 'berial'
 
 export function bridgeEvent(): void {
-  mixin({ create })
+  mixin({ boostrap })
 }
 
-async function create(app): Promise<void> {
+async function boostrap(app): Promise<void> {
   const shadowRoot = app.host.shadowRoot
   const define = Object.defineProperty
   const fromNode = shadowRoot,

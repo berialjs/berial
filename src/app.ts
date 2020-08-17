@@ -105,9 +105,9 @@ async function runLoad(app: App): Promise<any> {
     for (const k of styleNodes)
       app.host.shadowRoot!.insertBefore(k, app.host.shadowRoot!.firstChild)
     app.status = Status.NOT_BOOTSTRAPPED
-    app.bootstrap = compose(selfLife.bootstrap.concat(mixinLife.bootstrap))
-    app.mount = compose(selfLife.mount.concat(mixinLife.mount))
-    app.unmount = compose(selfLife.unmount.concat(mixinLife.unmount))
+    app.bootstrap = compose(mixinLife.bootstrap.concat(selfLife.bootstrap))
+    app.mount = compose(mixinLife.mount.concat(selfLife.mount))
+    app.unmount = compose(mixinLife.unmount.concat(selfLife.unmount))
     delete app.loaded
     return app
   })
@@ -183,8 +183,7 @@ window.addEventListener = function (name: any, fn: any): void {
     captured[name].push(fn)
     return
   }
-  // @ts-ignore
-  return oldAEL.apply(this, arguments)
+  return oldAEL.apply(this, arguments as any)
 }
 
 window.removeEventListener = function (name: any, fn: any): void {
@@ -192,8 +191,7 @@ window.removeEventListener = function (name: any, fn: any): void {
     captured[name] = captured[name].filter((l: any) => l !== fn)
     return
   }
-  //@ts-ignore
-  return oldREL.apply(this, arguments)
+  return oldREL.apply(this, arguments as any)
 }
 
 function polyfillRoute(updateState: any): () => void {
