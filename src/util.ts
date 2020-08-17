@@ -30,7 +30,7 @@ export function request(url: string, option?: RequestInit): Promise<string> {
 }
 
 export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
-  const keys = ['setup', 'mount', 'unmount']
+  const keys = ['bootstrap', 'mount', 'unmount']
   keys.forEach((key) => {
     if (!(key in lifecycle)) {
       error(
