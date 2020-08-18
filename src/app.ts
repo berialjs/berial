@@ -194,19 +194,18 @@ window.removeEventListener = function (name: any, fn: any): void {
   return oldREL.apply(this, arguments as any)
 }
 
-function polyfillRoute(updateState: any): () => void {
+function polyfillHistory(fn: any): () => void {
   return function (): void {
-    const urlBefore = window.location.href
+    const berfore = window.location.href
     // @ts-ignore
-    updateState.apply(this, arguments)
-    const urlAfter = window.location.href
-
-    if (urlBefore !== urlAfter) {
+    fn.apply(this, arguments)
+    const after = window.location.href
+    if (berfore !== berfore) {
       // @ts-ignore
       reroute(new PopStateEvent('popstate'))
     }
   }
 }
 
-window.history.pushState = polyfillRoute(window.history.pushState)
-window.history.replaceState = polyfillRoute(window.history.replaceState)
+window.history.pushState = polyfillHistory(window.history.pushState)
+window.history.replaceState = polyfillHistory(window.history.replaceState)
