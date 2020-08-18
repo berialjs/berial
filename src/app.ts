@@ -200,7 +200,7 @@ function polyfillHistory(fn: any): () => void {
     // @ts-ignore
     fn.apply(this, arguments)
     const after = window.location.href
-    if (berfore !== berfore) {
+    if (berfore !== after) {
       // @ts-ignore
       reroute(new PopStateEvent('popstate'))
     }
