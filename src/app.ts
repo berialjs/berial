@@ -196,11 +196,11 @@ window.removeEventListener = function (name: any, fn: any): void {
 
 function polyfillHistory(fn: any): () => void {
   return function (): void {
-    const berfore = window.location.href
+    const before = window.location.href
     // @ts-ignore
     fn.apply(this, arguments)
     const after = window.location.href
-    if (berfore !== after) {
+    if (before !== after) {
       // @ts-ignore
       reroute(new PopStateEvent('popstate'))
     }
