@@ -112,14 +112,12 @@ function runScript(
 ): Lifecycle {
   const resolver = new Function(
     'window',
-    `with(window) {
-      try {
+    `try {
         ${script}
         return window['${umdName}']
-      }
-      catch(e) {
+    }
+    catch(e) {
         console.log(e)
-      }
     }`
   )
   return resolver.call(global, global)
