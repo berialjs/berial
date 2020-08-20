@@ -112,8 +112,7 @@ function runScript(
 ): Lifecycle {
   const resolver = new Function(
     'window',
-    `
-    with(window.IS_BERIAL_SANDBOX) {
+    `with(window) {
       try {
         ${script}
         return window['${umdName}']
@@ -121,8 +120,7 @@ function runScript(
       catch(e) {
         console.log(e)
       }
-    }
-  `
+    }`
   )
   return resolver.call(global, global)
 }
