@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
+import router from './router'
 
 let mountEl = null
 
@@ -11,6 +12,7 @@ if (!window.IS_BERIAL_SANDBOX) {
 
   new Vue({
     el: appNode,
+    router,
     render: h => h(App)
   })
 }
@@ -28,6 +30,7 @@ export async function mount({ host }) {
 
   mountEl = new Vue({
     el: appNode,
+    router,
     render: h => h(App)
   })
 }
