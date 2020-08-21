@@ -14,7 +14,8 @@
   "author": "hansinhu",
   "license": "ISC",
   "dependencies": {
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-router": "^3.4.3"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
