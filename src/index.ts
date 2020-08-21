@@ -1,7 +1,7 @@
 import { start, register } from './app'
 import { mixin, use } from './mixin'
 import { loadScript, importHtml } from './html-loader'
-import { proxy } from './proxy'
+import { proxy } from './sanbox'
 
 export const Berial = {
   start,

@@ -1,6 +1,6 @@
 import type { App, PromiseFn, Lifecycles, Lifecycle, ProxyType } from './types'
 
-import { proxy } from './proxy'
+import { proxy } from './sanbox'
 import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
@@ -115,10 +115,10 @@ function runScript(
     `try {
         ${script}
         return window['${umdName}']
-    }
-    catch(e) {
+    } catch(e) {
         console.log(e)
-    }`
+    }
+    `
   )
   return resolver.call(global, global)
 }

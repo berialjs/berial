@@ -25,6 +25,10 @@ export function proxy(base: Record<string, any>, onWirte: any): ProxyType {
           (obj: Record<string, unknown>) => (copy[key] = obj)
         )
         return map[key]
+      } else if (typeof copy[key] === 'function') {
+        return copy[key].bind(base)
+      } else if (typeof target[key] === 'function') {
+        return target[key].bind(base)
       } else {
         return copy[key] || target[key]
       }
