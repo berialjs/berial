@@ -1,6 +1,6 @@
-import type { App, PromiseFn, Lifecycles, Lifecycle, ProxyType } from './types'
+import type { App, PromiseFn, Lifecycles, ProxyType } from './types'
 
-import { proxy } from './sanbox'
+import { run } from './sanbox'
 import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
@@ -47,14 +47,12 @@ export async function importHtml(
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const fake = proxy(window as any, null)
-  const lifecycle = await loadScript(template, fake, app.name)
+  const lifecycle = await loadScript(template, app.name)
   return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  global: ProxyType,
   name: string
 ): Promise<Lifecycles> {
   const { scriptURLs, scripts } = parseScript(template)
@@ -67,7 +65,7 @@ export async function loadScript(
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
   scriptsToLoad.forEach((script) => {
-    const lifecycles = runScript(script, global, name)
+    const lifecycles = run(script, name)
     bootstrap = [...bootstrap, lifecycles.bootstrap]
     mount = [...mount, lifecycles.mount]
     unmount = [...unmount, lifecycles.unmount]
@@ -103,24 +101,6 @@ function parseScript(
     scriptURLs,
     scripts
   }
-}
-
-function runScript(
-  script: string,
-  global: ProxyType,
-  umdName: string
-): Lifecycle {
-  const resolver = new Function(
-    'window',
-    `try {
-        ${script}
-        return window['${umdName}']
-    } catch(e) {
-        console.log(e)
-    }
-    `
-  )
-  return resolver.call(global, global)
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {

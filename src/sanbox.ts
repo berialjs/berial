@@ -1,52 +1,171 @@
-import { ProxyType } from './types'
+import { ProxyType, Lifecycle } from './types'
 
-const isArr = (x: unknown): boolean => Array.isArray(x)
-const isObj = (x: unknown): boolean =>
-  Object.prototype.toString.call(x) === '[object Object]'
+export function run(code: string, options: any) {
+  try {
+    if (checkSyntax(code)) {
+      let handler = {
+        get(obj: any, prop: string) {
+          return Reflect.has(obj, prop) ? obj[prop] : null
+        },
+        set(obj: any, prop: string, value: any) {
+          Reflect.set(obj, prop, value)
+          return true
+        },
+        has(obj: any, prop: string) {
+          return obj && Reflect.has(obj, prop)
+        }
+      }
+      let catchAllHandler = {
+        get(obj: any, prop: string) {
+          return Reflect.get(obj, prop)
+        },
+        set() {
+          return true
+        },
+        has() {
+          return true
+        }
+      }
 
-export function proxy(base: Record<string, any>, onWirte: any): ProxyType {
-  const copy = isArr(base) ? [] : getCleanCopy(base)
-  let map = Object.create(null)
-  let draft = {
-    base,
-    copy,
-    onWirte
-  }
-  return new Proxy(base, {
-    get<T extends string, U extends Record<string, any>>(
-      target: U,
-      key: T
-    ): U[T] | boolean {
-      if (key === 'IS_BERIAL_SANDBOX') return true
-      if (key in map) return map[key]
-      if (isObj(base[key]) || isArr(base[key])) {
-        map[key] = proxy(
-          base[key],
-          (obj: Record<string, unknown>) => (copy[key] = obj)
-        )
-        return map[key]
-      } else if (typeof copy[key] === 'function') {
-        return copy[key].bind(base)
-      } else if (typeof target[key] === 'function') {
-        return target[key].bind(base)
-      } else {
-        return copy[key] || target[key]
+      const console = {}
+
+      ;(function mockConsole(console: any) {
+        const keys = [
+          'debug',
+          'error',
+          'info',
+          'log',
+          'warn',
+          'dir',
+          'dirxml',
+          'table',
+          'trace',
+          'group',
+          'groupCollapsed',
+          'groupEnd',
+          'clear',
+          'count',
+          'countReset',
+          'assert',
+          'profile',
+          'profileEnd',
+          'time',
+          'timeLog',
+          'timeEnd',
+          'timeStamp'
+        ]
+
+        for (const k of keys) {
+          console[k] = function () {
+            if (arguments.length > 1 && typeof arguments[0] === 'string') {
+              arguments[0] = arguments[0].replace(/%/g, '%%')
+            }
+            return console[k](...arguments)
+          }
+        }
+      })(console)
+
+      let allowList = {
+        __proto__: null,
+        console,
+        String,
+        Number,
+        Array,
+        Symbol,
+        Math,
+        document,
+        Object,
+        Promise,
+        RegExp,
+        eval: function (code: string) {
+          return run('return ' + code, null)
+        },
+        alert: function () {
+          alert('Sandboxed alert:' + arguments[0])
+        },
+        ...options.allowList
       }
-    },
-    set(target, key: string, value): boolean {
-      if (isObj(base[key]) || isArr(base[key])) {
-        map[key] = proxy(
-          value,
-          (obj: Record<string, unknown>) => (copy[key] = obj)
+      if (!Object.isFrozen(String.prototype)) {
+        Object.freeze(Object)
+        Object.freeze(String)
+        Object.freeze(Number)
+        Object.freeze(Array)
+        Object.freeze(Symbol)
+        Object.freeze(Math)
+        Object.freeze(Function)
+        Object.freeze(RegExp)
+        Object.freeze(BigInt)
+        Object.freeze(Promise)
+        Object.freeze(console)
+        Object.freeze(BigInt.prototype)
+        Object.freeze(Object.prototype)
+        Object.freeze(String.prototype)
+        Object.freeze(Number.prototype)
+        Object.freeze(Array.prototype)
+        Object.freeze(Symbol.prototype)
+        Object.freeze(Function.prototype)
+        Object.freeze(RegExp.prototype)
+        Object.freeze(Promise.prototype)
+        Object.defineProperty(
+          async function () {}.constructor.prototype,
+          'constructor',
+          {
+            value: null,
+            configurable: false,
+            writable: false
+          }
+        )
+        Object.defineProperty(
+          async function* () {}.constructor.prototype,
+          'constructor',
+          {
+            value: null,
+            configurable: false,
+            writable: false
+          }
+        )
+        Object.defineProperty(
+          function* () {}.constructor.prototype,
+          'constructor',
+          {
+            value: null,
+            configurable: false,
+            writable: false
+          }
         )
       }
-      onWirte && onWirte(draft.onWirte)
-      copy[key] = value
-      return true
+      let proxy = new Proxy(allowList, handler)
+      let catchAllProxy = new Proxy(
+        {
+          __proto__: null,
+          proxy: proxy,
+          globalThis: new Proxy(allowList, handler),
+          window: new Proxy(allowList, handler)
+        },
+        catchAllHandler
+      )
+      let output = Function(
+        'proxy',
+        'catchAllProxy',
+        `with(catchAllProxy) {     
+            with(proxy) {  
+              return (function(){                                               
+                "use strict";
+                ${code};
+              })();
+            }
+        }`
+      )(proxy, catchAllProxy)
+      return output
     }
-  })
+  } catch (e) {
+    throw e
+  }
 }
-
-function getCleanCopy(obj: Record<string, unknown>): any {
-  return Object.create(Object.getPrototypeOf(obj))
+function checkSyntax(code: string) {
+  Function(code)
+  if (/\bimport\s*(?:[(]|\/[*]|\/\/|<!--|-->)/.test(code)) {
+    throw new Error('Dynamic imports are blocked')
+  }
+  return true
 }
