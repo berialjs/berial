@@ -11,3 +11,4 @@ jobs:
 
       - run: npm i
       - run: npm run check
+      - run: npm run test
