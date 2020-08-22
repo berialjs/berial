@@ -41,11 +41,6 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
   })
 }
 
-export function reverse(arr: any[]): any[] {
-  let last: any
-  const reversed: any[] = []
-  while ((last = arr.pop())) {
-    reversed.push(last)
-  }
-  return reversed
+export function reverse<T>(arr: T[]): T[] {
+  return Array.from(arr).reverse()
 }
