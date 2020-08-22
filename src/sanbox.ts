@@ -47,7 +47,6 @@ export function run(code: string, options: any): any {
         performance,
         MessageChannel,
         SVGElement,
-        HTMLIFrameElement,
         HTMLElement,
         history,
         Map,
