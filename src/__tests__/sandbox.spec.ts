@@ -1,6 +1,6 @@
-import * as chai from 'chai'
-import { run } from '../sandbox'
+import chai from 'chai'
 import sinon from 'sinon'
+import { run } from '../sandbox'
 
 const { expect } = chai
 const { spy } = sinon
