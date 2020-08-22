@@ -1,9 +1,6 @@
-import chai from 'chai'
-import sinon from 'sinon'
+import { expect } from 'chai'
+import { spy } from 'sinon'
 import { run } from '../sandbox'
-
-const { expect } = chai
-const { spy } = sinon
 
 describe('sandbox', () => {
   it('should throw error when code has dynamic import', () => {
