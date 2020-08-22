@@ -33,6 +33,7 @@
     "@types/chai": "^4.2.12",
     "@types/mocha": "^8.0.3",
     "@types/node": "^10.12.24",
+    "@types/sinon": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "chai": "^4.2.0",
@@ -60,5 +61,8 @@
     "hooks": {
       "pre-commit": "run-p fmt fix; git add ."
     }
+  },
+  "dependencies": {
+    "sinon": "^9.0.3"
   }
 }
