@@ -15,7 +15,7 @@ export function run(code: string, options: any) {
           return obj && Reflect.has(obj, prop)
         }
       }
-      let catchAllHandler = {
+      let captureHandler = {
         get(obj: any, prop: string) {
           return Reflect.get(obj, prop)
         },
@@ -60,6 +60,7 @@ export function run(code: string, options: any) {
         localStorage,
         decodeURI,
         encodeURI,
+        fetch: fetch.bind(window),
         setTimeout: setTimeout.bind(window),
         clearTimeout: clearTimeout.bind(window),
         setInterval: setInterval.bind(window),
@@ -76,8 +77,20 @@ export function run(code: string, options: any) {
         },
         ...(options.allowList || {})
       }
+
+      if (!Object.isFrozen(String.prototype)) {
+        for (const k in allowList) {
+          const fn = allowList[k]
+          if (fn.prototype) {
+            Object.freeze(fn.prototype)
+          }
+          if (k !== 'localStorage') {
+            Object.freeze(fn)
+          }
+        }
+      }
       let proxy = new Proxy(allowList, handler)
-      let catchAllProxy = new Proxy(
+      let capture = new Proxy(
         {
           __proto__: null,
           proxy: proxy,
@@ -85,12 +98,12 @@ export function run(code: string, options: any) {
           window: new Proxy(allowList, handler),
           self: new Proxy(allowList, handler)
         },
-        catchAllHandler
+        captureHandler
       )
       let output = Function(
         'proxy',
-        'catchAllProxy',
-        `with(catchAllProxy) {     
+        'capture',
+        `with(capture) {     
             with(proxy) {  
               return (function(){                                               
                 "use strict";
@@ -99,7 +112,7 @@ export function run(code: string, options: any) {
               })();
             }
         }`
-      )(proxy, catchAllProxy)
+      )(proxy, capture)
       return output
     }
   } catch (e) {
