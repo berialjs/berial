@@ -20,6 +20,5 @@ export async function unmount({ host }) {
   console.log('react unmout')
 
   const root = host.shadowRoot.getElementById('root')
-  // 从 DOM 中卸载组件
   ReactDOM.unmountComponentAtNode(root)
 }

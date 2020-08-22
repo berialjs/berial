@@ -1,6 +1,9 @@
-import { h, render } from 'fre'
+import { h, render,useEffect } from 'fre'
 
 function App() {
+  useEffect(()=>{
+    document.title = '111'
+  })
   return <div>
     <h1 style={{ color: 'rgb(242, 35, 101)' }}>Hello Fre!!</h1>
     <img height='300' src='http://wx2.sinaimg.cn/mw690/0060lm7Tly1ftpm5b3ihfj3096097aaj.jpg' />
