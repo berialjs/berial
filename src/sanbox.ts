@@ -1,28 +1,28 @@
 import { ProxyType, Lifecycle } from './types'
 
-export function run(code: string, options: any) {
+export function run(code: string, options: any): any {
   try {
     if (checkSyntax(code)) {
       let handler = {
-        get(obj: any, prop: string) {
+        get(obj: any, prop: string): any {
           return Reflect.has(obj, prop) ? obj[prop] : null
         },
-        set(obj: any, prop: string, value: any) {
+        set(obj: any, prop: string, value: any): boolean {
           Reflect.set(obj, prop, value)
           return true
         },
-        has(obj: any, prop: string) {
+        has(obj: any, prop: string): boolean {
           return obj && Reflect.has(obj, prop)
         }
       }
       let captureHandler = {
-        get(obj: any, prop: string) {
+        get(obj: any, prop: string): any {
           return Reflect.get(obj, prop)
         },
-        set() {
+        set(): boolean {
           return true
         },
-        has() {
+        has(): boolean {
           return true
         }
       }
@@ -69,10 +69,10 @@ export function run(code: string, options: any) {
         cancelAnimationFrame: cancelAnimationFrame.bind(window),
         addEventListener: addEventListener.bind(window),
         removeEventListener: removeEventListener.bind(window),
-        eval: function (code: string) {
+        eval: function (code: string): any {
           return run('return ' + code, null)
         },
-        alert: function () {
+        alert: function (): void {
           alert('Sandboxed alert:' + arguments[0])
         },
         ...(options.allowList || {})
@@ -100,7 +100,7 @@ export function run(code: string, options: any) {
         },
         captureHandler
       )
-      let output = Function(
+      return Function(
         'proxy',
         'capture',
         `with(capture) {     
@@ -113,13 +113,12 @@ export function run(code: string, options: any) {
             }
         }`
       )(proxy, capture)
-      return output
     }
   } catch (e) {
     throw e
   }
 }
-function checkSyntax(code: string) {
+function checkSyntax(code: string): boolean {
   Function(code)
   if (/\bimport\s*(?:[(]|\/[*]|\/\/|<!--|-->)/.test(code)) {
     throw new Error('Dynamic imports are blocked')
