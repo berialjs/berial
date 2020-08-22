@@ -1,7 +1,7 @@
 export function run(code: string, options: any = {}): any {
   try {
     if (checkSyntax(code)) {
-      let handler = {
+      const handler = {
         get(obj: any, prop: string): any {
           return Reflect.has(obj, prop) ? obj[prop] : null
         },
@@ -13,7 +13,7 @@ export function run(code: string, options: any = {}): any {
           return obj && Reflect.has(obj, prop)
         }
       }
-      let captureHandler = {
+      const captureHandler = {
         get(obj: any, prop: string): any {
           return Reflect.get(obj, prop)
         },
@@ -25,7 +25,7 @@ export function run(code: string, options: any = {}): any {
         }
       }
 
-      let allowList = {
+      const allowList = {
         IS_BERIAL_SANDBOX: true,
         __proto__: null,
         console,
@@ -106,8 +106,8 @@ export function run(code: string, options: any = {}): any {
           }
         }
       }
-      let proxy = new Proxy(allowList, handler)
-      let capture = new Proxy(
+      const proxy = new Proxy(allowList, handler)
+      const capture = new Proxy(
         {
           __proto__: null,
           proxy,
