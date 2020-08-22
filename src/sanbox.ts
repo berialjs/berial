@@ -27,45 +27,8 @@ export function run(code: string, options: any) {
         }
       }
 
-      const console = {}
-
-      ;(function mockConsole(console: any) {
-        const keys = [
-          'debug',
-          'error',
-          'info',
-          'log',
-          'warn',
-          'dir',
-          'dirxml',
-          'table',
-          'trace',
-          'group',
-          'groupCollapsed',
-          'groupEnd',
-          'clear',
-          'count',
-          'countReset',
-          'assert',
-          'profile',
-          'profileEnd',
-          'time',
-          'timeLog',
-          'timeEnd',
-          'timeStamp'
-        ]
-
-        for (const k of keys) {
-          console[k] = function () {
-            if (arguments.length > 1 && typeof arguments[0] === 'string') {
-              arguments[0] = arguments[0].replace(/%/g, '%%')
-            }
-            return console[k](...arguments)
-          }
-        }
-      })(console)
-
       let allowList = {
+        IS_BERIAL_SANDBOX: true,
         __proto__: null,
         console,
         String,
@@ -73,66 +36,45 @@ export function run(code: string, options: any) {
         Array,
         Symbol,
         Math,
-        document,
         Object,
         Promise,
         RegExp,
+        JSON,
+        Date,
+        Function,
+        parseInt,
+        document,
+        navigator,
+        location,
+        performance,
+        MessageChannel,
+        SVGElement,
+        HTMLIFrameElement,
+        HTMLElement,
+        history,
+        Map,
+        Set,
+        WeakMap,
+        WeakSet,
+        Error,
+        localStorage,
+        decodeURI,
+        encodeURI,
+        setTimeout: setTimeout.bind(window),
+        clearTimeout: clearTimeout.bind(window),
+        setInterval: setInterval.bind(window),
+        clearInterval: clearInterval.bind(window),
+        requestAnimationFrame: requestAnimationFrame.bind(window),
+        cancelAnimationFrame: cancelAnimationFrame.bind(window),
+        addEventListener: addEventListener.bind(window),
+        removeEventListener: removeEventListener.bind(window),
         eval: function (code: string) {
           return run('return ' + code, null)
         },
         alert: function () {
           alert('Sandboxed alert:' + arguments[0])
         },
-        ...options.allowList
-      }
-      if (!Object.isFrozen(String.prototype)) {
-        Object.freeze(Object)
-        Object.freeze(String)
-        Object.freeze(Number)
-        Object.freeze(Array)
-        Object.freeze(Symbol)
-        Object.freeze(Math)
-        Object.freeze(Function)
-        Object.freeze(RegExp)
-        Object.freeze(BigInt)
-        Object.freeze(Promise)
-        Object.freeze(console)
-        Object.freeze(BigInt.prototype)
-        Object.freeze(Object.prototype)
-        Object.freeze(String.prototype)
-        Object.freeze(Number.prototype)
-        Object.freeze(Array.prototype)
-        Object.freeze(Symbol.prototype)
-        Object.freeze(Function.prototype)
-        Object.freeze(RegExp.prototype)
-        Object.freeze(Promise.prototype)
-        Object.defineProperty(
-          async function () {}.constructor.prototype,
-          'constructor',
-          {
-            value: null,
-            configurable: false,
-            writable: false
-          }
-        )
-        Object.defineProperty(
-          async function* () {}.constructor.prototype,
-          'constructor',
-          {
-            value: null,
-            configurable: false,
-            writable: false
-          }
-        )
-        Object.defineProperty(
-          function* () {}.constructor.prototype,
-          'constructor',
-          {
-            value: null,
-            configurable: false,
-            writable: false
-          }
-        )
+        ...(options.allowList || {})
       }
       let proxy = new Proxy(allowList, handler)
       let catchAllProxy = new Proxy(
@@ -140,7 +82,8 @@ export function run(code: string, options: any) {
           __proto__: null,
           proxy: proxy,
           globalThis: new Proxy(allowList, handler),
-          window: new Proxy(allowList, handler)
+          window: new Proxy(allowList, handler),
+          self: new Proxy(allowList, handler)
         },
         catchAllHandler
       )
@@ -152,6 +95,7 @@ export function run(code: string, options: any) {
               return (function(){                                               
                 "use strict";
                 ${code};
+                return window
               })();
             }
         }`

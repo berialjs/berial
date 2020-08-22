@@ -1,18 +1,18 @@
 import { start, register } from './app'
 import { mixin, use } from './mixin'
 import { loadScript, importHtml } from './html-loader'
-import { proxy } from './sanbox'
+import { run } from './sanbox'
 
 export const Berial = {
   start,
   register,
   loadScript,
   importHtml,
-  proxy,
+  run,
   mixin,
   use
 }
 
 export default Berial
 
-export { start, register, loadScript, importHtml, proxy, mixin, use }
+export { start, register, loadScript, importHtml, run, mixin, use }

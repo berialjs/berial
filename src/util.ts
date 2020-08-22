@@ -17,6 +17,7 @@ export function error(trigger: any, msg?: any): void {
 }
 
 export function request(url: string, option?: RequestInit): Promise<string> {
+  console.log(url)
   if (!window.fetch) {
     error(
       "It looks like that your browser doesn't support fetch. Polyfill is needed before you use it."
