@@ -68,12 +68,30 @@ export function run(code: string, options: any = {}): any {
         cancelAnimationFrame: cancelAnimationFrame.bind(window),
         addEventListener: addEventListener.bind(window),
         removeEventListener: removeEventListener.bind(window),
+        // eslint-disable-next-line no-shadow
         eval: function (code: string): any {
           return run('return ' + code, null)
         },
         alert: function (): void {
           alert('Sandboxed alert:' + arguments[0])
         },
+        // position related properties
+        innerHeight,
+        innerWidth,
+        outerHeight,
+        outerWidth,
+        pageXOffset,
+        pageYOffset,
+        screen,
+        screenLeft,
+        screenTop,
+        screenX,
+        screenY,
+        scrollBy,
+        scrollTo,
+        scrollX,
+        scrollY,
+        // custom allow list
         ...(options.allowList || {})
       }
 
