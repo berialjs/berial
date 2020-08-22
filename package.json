@@ -33,6 +33,7 @@
     "@types/chai": "^4.2.12",
     "@types/mocha": "^8.0.3",
     "@types/node": "^10.12.24",
+    "@types/sinon": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "chai": "^4.2.0",
@@ -53,6 +54,7 @@
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "serve": "^11.3.2",
+    "sinon": "^9.0.3",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },

@@ -1,4 +1,4 @@
-export function run(code: string, options: any): any {
+export function run(code: string, options: any = {}): any {
   try {
     if (checkSyntax(code)) {
       let handler = {
