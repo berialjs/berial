@@ -54,6 +54,7 @@
     "rollup": "^2.23.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "serve": "^11.3.2",
+    "sinon": "^9.0.3",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
   },
@@ -61,8 +62,5 @@
     "hooks": {
       "pre-commit": "run-p fmt fix; git add ."
     }
-  },
-  "dependencies": {
-    "sinon": "^9.0.3"
   }
 }
