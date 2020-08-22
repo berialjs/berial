@@ -1,5 +1,3 @@
-import { ProxyType, Lifecycle } from './types'
-
 export function run(code: string, options: any): any {
   try {
     if (checkSyntax(code)) {
@@ -60,6 +58,8 @@ export function run(code: string, options: any): any {
         localStorage,
         decodeURI,
         encodeURI,
+        decodeURIComponent,
+        encodeURIComponent,
         fetch: fetch.bind(window),
         setTimeout: setTimeout.bind(window),
         clearTimeout: clearTimeout.bind(window),
@@ -93,7 +93,7 @@ export function run(code: string, options: any): any {
       let capture = new Proxy(
         {
           __proto__: null,
-          proxy: proxy,
+          proxy,
           globalThis: new Proxy(allowList, handler),
           window: new Proxy(allowList, handler),
           self: new Proxy(allowList, handler)
