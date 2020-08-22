@@ -24,7 +24,7 @@ export default {
     typescript({
       tsconfig: 'tsconfig.json',
       removeComments: true,
-      useTsconfigDeclarationDir: true,
-    }),
+      useTsconfigDeclarationDir: true
+    })
   ]
 }

@@ -1,6 +1,6 @@
 import type { App, PromiseFn, Lifecycles, ProxyType } from './types'
 
-import { run } from './sanbox'
+import { run } from './sandbox'
 import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
