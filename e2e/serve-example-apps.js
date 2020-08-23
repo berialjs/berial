@@ -10,14 +10,20 @@ const appDirs = [
   'example/parent'
 ]
 
+const rootDir = path.resolve(__dirname, '..')
+
 module.exports = async () => {
+  console.log('[e2e test]: start building berial dist')
+  await execa('npm', ['run', 'build'], {
+    cwd: rootDir,
+    env: process.env
+  })
+  console.log('[e2e test]: end building berial dist')
   console.log('[e2e test]: start building apps')
-  const appAbsoluteDirs = appDirs.map((dir) =>
-    path.resolve(__dirname, '..', dir)
-  )
+  const appAbsoluteDirs = appDirs.map((dir) => path.resolve(rootDir, dir))
   await Promise.all(
     appAbsoluteDirs.map((dir) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         return execa('npm', ['run', 'build:test'], {
           cwd: dir,
           env: process.env
