@@ -10,7 +10,7 @@ const appDirs = [
   'example/parent'
 ]
 
-const rootDir = path.resolve(__dirname, '..')
+const rootDir = path.resolve(__dirname, '..', '..')
 
 module.exports = async () => {
   console.log('[e2e test]: start building berial dist')

@@ -6,7 +6,7 @@ module.exports = function (config) {
     singleRun: true,
     browsers: ['ChromeHeadless'],
     frameworks: ['mocha', 'karma-typescript'],
-    files: ['src/**/*.ts', 'test/**/*.ts'],
+    files: ['src/**/*.ts', 'test/unit/**/*.ts'],
     preprocessors: {
       'src/**/*.ts': 'karma-typescript',
       'test/**/*.ts': 'karma-typescript'

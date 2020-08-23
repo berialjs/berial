@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { spy } from 'sinon'
-import { run } from '../src/sandbox'
+import { run } from '../../src/sandbox'
 
 describe('sandbox', () => {
   it('should throw error when code has dynamic import', () => {
