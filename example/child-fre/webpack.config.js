@@ -12,7 +12,7 @@ module.exports = {
     umdNamedDefine: true,
     publicPath:
       process.env.NODE_ENV === 'production'
-        ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
+        ? 'https://berial-child-fre.vercel.app'
         : 'http://localhost:3001'
   },
   module: {
@@ -59,7 +59,7 @@ module.exports = {
     port: 3001,
     historyApiFallback: true,
     hot: true,
-    inline: false,
+    inline: false
     // lazy: true,
   }
 }

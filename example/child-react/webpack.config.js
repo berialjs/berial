@@ -12,7 +12,7 @@ module.exports = {
     umdNamedDefine: true,
     publicPath:
       process.env.NODE_ENV === 'production'
-        ? 'https://s-sh-16-clicli.oss.dogecdn.com/'
+        ? 'https://berial-child-react.vercel.app'
         : 'http://localhost:3002'
   },
   module: {
