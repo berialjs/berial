@@ -2,7 +2,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "build:test": "cross-env NODE_ENV=test webpack --mode production",
-    "build:all": "concurrently \"npm run build:child-fre\" \"npm run build:child-react\" \"npm run build:child-vue\"",
+    "build:all": "concurrently \"npm run build\" \"npm run build:child-fre\" \"npm run build:child-react\" \"npm run build:child-vue\"",
     "start": "concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
     "start:parent": "cross-env NODE_ENV=development webpack-dev-server --mode production",
     "start:child-fre": "cd ../child-fre && npm start",
