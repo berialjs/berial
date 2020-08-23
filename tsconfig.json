@@ -2,8 +2,6 @@
   "compilerOptions": {
     "strict": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationDir": "dist/types/",
     "noImplicitAny": true,
     "removeComments": true,
     "target": "es6",
