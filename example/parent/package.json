@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "start": "concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
+    "build:berial": "cd ../../ && npm run build && cd example/parent",
+    "start": "npm run build:berial && concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
     "start:parent": "cross-env NODE_ENV=development webpack-dev-server --mode production",
     "start:child-fre": "cd ../child-fre && npm start",
     "start:child-react": "cd ../child-react && npm start",
