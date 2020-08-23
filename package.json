@@ -60,7 +60,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "run-p fmt fix; git add ."
+      "pre-commit": "run-p fmt fix;"
     }
   }
 }
