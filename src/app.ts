@@ -1,8 +1,7 @@
 import type { App } from './types'
 import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
-import { lifecycleCheck } from './util'
-import { appendFileSync } from 'fs'
+import { lifecycleCheck, reverse } from './util'
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
   LOADING = 'LOADING',
@@ -103,7 +102,7 @@ async function runLoad(app: App): Promise<any> {
     const { lifecycle: selfLife, bodyNode, styleNodes } = await importHtml(app)
     lifecycleCheck(selfLife)
     app.host.shadowRoot?.appendChild(bodyNode.content.cloneNode(true))
-    for (const k of styleNodes)
+    for (const k of reverse(styleNodes))
       app.host.shadowRoot!.insertBefore(k, app.host.shadowRoot!.firstChild)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(mixinLife.bootstrap.concat(selfLife.bootstrap))
