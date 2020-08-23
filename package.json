@@ -1,6 +1,6 @@
 {
   "name": "berial",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "micro frontend",
   "main": "dist/berial.js",
   "module": "dist/berial.esm.js",
@@ -60,7 +60,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "run-p fmt fix;"
+      "pre-commit": "yarn fmt && yarn fix;"
     }
   }
 }

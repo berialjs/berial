@@ -2,6 +2,7 @@ import type { App } from './types'
 import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
 import { lifecycleCheck } from './util'
+import { appendFileSync } from 'fs'
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
   LOADING = 'LOADING',
@@ -197,12 +198,11 @@ window.removeEventListener = function (name: any, fn: any): void {
 function polyfillHistory(fn: any): () => void {
   return function (): void {
     const before = window.location.href
-    // @ts-ignore
-    fn.apply(this, arguments)
+    fn.apply(window.history, arguments)
     const after = window.location.href
     if (before !== after) {
-      // @ts-ignore
-      reroute(new PopStateEvent('popstate'))
+      new PopStateEvent('popstate')
+      reroute()
     }
   }
 }

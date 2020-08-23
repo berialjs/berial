@@ -1,4 +1,4 @@
-import type { App, PromiseFn, Lifecycles, ProxyType } from './types'
+import type { App, PromiseFn, Lifecycles } from './types'
 
 import { run } from './sandbox'
 import { request } from './util'
@@ -108,8 +108,8 @@ async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
   const fetchedStyles = await Promise.all(cssURLs.map((url) => request(url)))
   return toStyleNodes(fetchedStyles.concat(styles))
 
-  function toStyleNodes(styles: string[]): HTMLStyleElement[] {
-    return styles.map((style) => {
+  function toStyleNodes(s: string[]): HTMLStyleElement[] {
+    return s.map((style) => {
       const styleNode = document.createElement('style')
       styleNode.appendChild(document.createTextNode(style))
       return styleNode
