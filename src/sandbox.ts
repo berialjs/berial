@@ -48,6 +48,7 @@ export function run(code: string, options: any = {}): any {
         MessageChannel,
         SVGElement,
         HTMLElement,
+        HTMLIFrameElement,
         history,
         Map,
         Set,
@@ -98,10 +99,10 @@ export function run(code: string, options: any = {}): any {
       if (!Object.isFrozen(String.prototype)) {
         for (const k in allowList) {
           const fn = allowList[k]
-          if (fn.prototype) {
+          if (typeof fn === 'object' && fn.prototype) {
             Object.freeze(fn.prototype)
           }
-          if (k !== 'localStorage') {
+          if (typeof fn === 'function') {
             Object.freeze(fn)
           }
         }
