@@ -32,7 +32,7 @@ describe('example app', async () => {
         document.querySelector('child-react').shadowRoot.querySelector('h1')
           .textContent
     )
-    expect(reactHello.startsWith('Hello React'))
+    expect(reactHello.startsWith('Hello React')).to.eq(true)
     // test vue
     await page.click('header button:nth-child(3)')
     await sleep(1000)
@@ -41,7 +41,7 @@ describe('example app', async () => {
         document.querySelector('child-vue').shadowRoot.querySelector('h1')
           .textContent
     )
-    expect(vueHello.startsWith('Hello vue'))
+    expect(vueHello.startsWith('Hello Vue')).to.eq(true)
   })
   after(async () => {
     await browser.close()

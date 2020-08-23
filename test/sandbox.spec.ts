@@ -14,7 +14,7 @@ describe('sandbox', () => {
   })
   it('should not leak variable on window', () => {
     run('window.a = 1')
-    expect(!Reflect.has(window, 'a'))
+    expect(!Reflect.has(window, 'a')).to.eq(true)
   })
   it('should not affect window in different run', () => {
     const window1Spy = spy()
@@ -33,7 +33,7 @@ describe('sandbox', () => {
         }
       }
     })
-    expect(window1Spy.calledWith(1))
-    expect(window2Spy.calledWith(2))
+    expect(window1Spy.calledWith(1)).to.eq(true)
+    expect(window2Spy.calledWith(2)).to.eq(true)
   })
 })
