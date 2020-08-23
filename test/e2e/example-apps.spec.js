@@ -17,7 +17,7 @@ describe('example app', async () => {
   it('works', async () => {
     await page.goto('http://localhost:3000')
     // test fre
-    await sleep(1000)
+    await sleep(3000)
     const freHello = await page.evaluate(
       () =>
         document.querySelector('child-fre').shadowRoot.querySelector('h1')
@@ -26,7 +26,7 @@ describe('example app', async () => {
     expect(freHello).to.eq('Hello Fre!!')
     // test react
     await page.click('header button:nth-child(2)')
-    await sleep(1000)
+    await sleep(3000)
     const reactHello = await page.evaluate(
       () =>
         document.querySelector('child-react').shadowRoot.querySelector('h1')
@@ -35,7 +35,7 @@ describe('example app', async () => {
     expect(reactHello.startsWith('Hello React')).to.eq(true)
     // test vue
     await page.click('header button:nth-child(3)')
-    await sleep(1000)
+    await sleep(3000)
     const vueHello = await page.evaluate(
       () =>
         document.querySelector('child-vue').shadowRoot.querySelector('h1')
