@@ -13,7 +13,10 @@
     "jsx": "react",
     "lib": ["es6", "dom"],
     "baseUrl": ".",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["test/*", "node_modules"]
