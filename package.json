@@ -14,8 +14,9 @@
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
     "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
-    "demo": "npm run build && cd example/parent && npm start && cd ../..",
     "demo:init": "cd example/parent && npm run install:all && cd ../..",
+    "demo:serve": "npm run build && cd example/parent && npm start && cd ../..",
+    "demo:build": "npm run build && cd example/parent && npm run build:all",
     "test": "karma start karma.conf.js",
     "e2e": "cross-env NODE_ENV=test mocha --timeout 600000 test/e2e/**/*.spec.js"
   },
