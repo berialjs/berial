@@ -7,14 +7,12 @@
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "check": "run-p fmt-check lint",
     "dev": "rollup -c --watch",
+    "check": "run-p fmt-check lint",
     "fix": "run-s \"lint -- --fix\"",
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
-    "serve": "serve ./demo/",
-    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
     "test": "karma start karma.conf.js"
   },
   "repository": {
@@ -60,7 +58,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn fmt && yarn fix;"
+      "pre-commit": "npm run fmt && npm run fix;"
     }
   }
 }
