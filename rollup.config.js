@@ -2,9 +2,6 @@ import typescript from 'rollup-plugin-typescript2'
 import replace from '@rollup/plugin-replace'
 import dtsPlugin from 'rollup-plugin-dts'
 
-/**
- * @param {boolean} dts
- */
 function createConfig(dts) {
   let file = `dist/${dts ? 'types/index.d.ts' : 'berial.js'}`
   return {
