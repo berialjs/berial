@@ -2,7 +2,7 @@ import { h, render,useEffect } from 'fre'
 
 function App() {
   useEffect(()=>{
-    document.title = '111'
+    document.title = 'child-fre'
   })
   return <div>
     <h1 style={{ color: 'rgb(242, 35, 101)' }}>Hello Fre!!</h1>
