@@ -27,6 +27,5 @@ function createConfig(dts) {
 }
 
 export default [
-  createConfig(),
-  createConfig(true)
+  createConfig()
 ]
