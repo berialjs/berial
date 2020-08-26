@@ -9,6 +9,15 @@ export type Lifecycle = {
   load?: PromiseFn
 }
 
+export type Mixin = {
+  load?: PromiseFn
+  mount?: PromiseFn
+  unmount?: PromiseFn
+  bootstrap?: PromiseFn
+}
+
+export type Plugin = (...args: any[]) => any
+
 export type App = {
   name: string
   url: ((props: App['props']) => Lifecycle) | string

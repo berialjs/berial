@@ -24,7 +24,7 @@ export function register(name: string, url: string, match: any): void {
     url,
     match,
     status: Status.NOT_LOADED
-  } as App)
+  })
 }
 
 export function start(): void {
