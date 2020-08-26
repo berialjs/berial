@@ -1,17 +1,4 @@
-import { start, register } from './app'
-import { mixin, use } from './mixin'
-import { importHtml } from './html-loader'
-import { run } from './sandbox'
-
-export const Berial = {
-  start,
-  register,
-  importHtml,
-  run,
-  mixin,
-  use
-}
-
-export default Berial
-
-export { start, register, importHtml, run, mixin, use }
+export { start, register } from './app'
+export { mixin, use } from './mixin'
+export { importHtml } from './html-loader'
+export { run } from './sandbox'

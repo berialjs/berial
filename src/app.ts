@@ -99,7 +99,7 @@ async function runLoad(app: App): Promise<any> {
   app.loaded = Promise.resolve().then(async () => {
     app.status = Status.LOADING
     let mixinLife = mapMixin()
-    app.host = (await loadShadowDOM(app)) as any
+    app.host = loadShadowDOM(app)
     const { lifecycle: selfLife, bodyNode, styleNodes } = await importHtml(app)
     lifecycleCheck(selfLife)
     app.host.shadowRoot?.appendChild(bodyNode.content.cloneNode(true))
@@ -115,25 +115,22 @@ async function runLoad(app: App): Promise<any> {
   return app.loaded
 }
 
-async function loadShadowDOM(app: App): Promise<HTMLElement> {
-  return new Promise<HTMLElement>((resolve) => {
-    class Berial extends HTMLElement {
-      static get tag(): string {
-        return app.name
-      }
-      connectedCallback(): void {
-        resolve(this)
-      }
-      constructor() {
-        super()
-        this.attachShadow({ mode: 'open' })
-      }
+function loadShadowDOM(app: App): any {
+  let host = null
+  class Berial extends HTMLElement {
+    static get tag(): string {
+      return app.name
     }
-    const hasDef = window.customElements.get(app.name)
-    if (!hasDef) {
-      customElements.define(app.name, Berial)
+    constructor() {
+      super()
+      host = this.attachShadow({ mode: 'open' })
     }
-  })
+  }
+  const hasDef = window.customElements.get(app.name)
+  if (!hasDef) {
+    customElements.define(app.name, Berial)
+  }
+  return host
 }
 
 async function runUnmount(app: App): Promise<App> {

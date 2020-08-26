@@ -1,15 +1,15 @@
 import typescript from 'rollup-plugin-typescript2'
-import replace from '@rollup/plugin-replace'
+import dts from 'rollup-plugin-dts'
 
 export default {
   input: 'src/index.ts',
   output: [
-    // {
-    //   file: 'dist/es/berial.esm.js',
-    //   format: 'esm',
-    //   sourcemap: true,
-    //   name: 'berial'
-    // },
+    { file: 'dist/berial.d.ts', format: 'esm', exports: 'named' },
+    {
+      file: 'dist/berial.esm.js',
+      format: 'esm',
+      sourcemap: true
+    },
     {
       file: 'dist/berial.js',
       format: 'umd',
@@ -18,9 +18,7 @@ export default {
     }
   ],
   plugins: [
-    replace({
-      __DEV__: process.env.NODE_ENV !== 'production'
-    }),
+    dts(),
     typescript({
       tsconfig: 'tsconfig.json',
       removeComments: true,
