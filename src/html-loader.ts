@@ -31,6 +31,10 @@ const CSS_URL_RE = new RegExp(
   'g'
 )
 const STYLE_RE = /<\s*style\s*>([^<]*)<\s*\/style>/g
+const CSS_URL_OR_STYLE_RE = new RegExp(
+  '(?:' + CSS_URL_RE.source + ')|(?:' + STYLE_RE.source + ')',
+  'g'
+)
 const BODY_CONTENT_RE = /<\s*body[^>]*>([\w\W]*)<\s*\/body>/
 const SCRIPT_ANY_RE = /<\s*script[^>]*>[\s\S]*?(<\s*\/script[^>]*>)/g
 const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/
@@ -104,9 +108,14 @@ function parseScript(
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
-  const { cssURLs, styles } = parseCSS(template)
-  const fetchedStyles = await Promise.all(cssURLs.map((url) => request(url)))
-  return toStyleNodes(fetchedStyles.concat(styles))
+  const cssList = parseCSS(template)
+  const styles = await Promise.all(
+    cssList.map((v: string) => {
+      if (TEST_URL.test(v)) return request(v)
+      return v
+    })
+  )
+  return toStyleNodes(styles)
 
   function toStyleNodes(s: string[]): HTMLStyleElement[] {
     return s.map((style) => {
@@ -117,33 +126,23 @@ async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
   }
 }
 
-function parseCSS(
-  template: string
-): {
-  cssURLs: string[]
-  styles: string[]
-} {
-  const cssURLs: string[] = []
-  const styles: string[] = []
-  CSS_URL_RE.lastIndex = STYLE_RE.lastIndex = 0
+function parseCSS(template: string): string[] {
+  const cssList: string[] = []
+  CSS_URL_OR_STYLE_RE.lastIndex = 0
   let match
-  while ((match = CSS_URL_RE.exec(template))) {
-    let captured = match[1].trim()
-    if (!captured) continue
-    if (!TEST_URL.test(captured)) {
-      captured = window.location.origin + captured
+  while ((match = CSS_URL_OR_STYLE_RE.exec(template))) {
+    let captured
+    if (match[1]) {
+      captured = match[1].trim()
+      if (!TEST_URL.test(captured)) {
+        captured = window.location.origin + captured
+      }
+    } else if (match[2]) {
+      captured = match[2].trim()
     }
-    cssURLs.push(captured)
+    captured && cssList.push(captured)
   }
-  while ((match = STYLE_RE.exec(template))) {
-    const captured = match[1].trim()
-    if (!captured) continue
-    styles.push(captured)
-  }
-  return {
-    cssURLs,
-    styles
-  }
+  return cssList
 }
 
 function loadBody(template: string): HTMLTemplateElement {

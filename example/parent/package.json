@@ -1,8 +1,9 @@
 {
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "build:berial": "cd ../../ && npm run build && cd example/parent",
-    "start": "npm run build:berial && concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
+    "build:test": "cross-env NODE_ENV=test webpack --mode production",
+    "build:all": "concurrently \"npm run build\" \"npm run build:child-fre\" \"npm run build:child-react\" \"npm run build:child-vue\"",
+    "start": "concurrently \"npm run start:parent\" \"npm run start:child-fre\" \"npm run start:child-react\" \"npm run start:child-vue\"",
     "start:parent": "cross-env NODE_ENV=development webpack-dev-server --mode production",
     "start:child-fre": "cd ../child-fre && npm start",
     "start:child-react": "cd ../child-react && npm start",
@@ -10,7 +11,10 @@
     "install:all": "npm i && concurrently \"npm run install:child-fre\" \"npm run install:child-react\" \"npm run install:child-vue\"",
     "install:child-fre": "cd ../child-fre && npm i",
     "install:child-react": "cd ../child-react && npm i",
-    "install:child-vue": "cd ../child-vue && npm i"
+    "install:child-vue": "cd ../child-vue && npm i",
+    "build:child-fre": "cd ../child-fre && npm run build",
+    "build:child-react": "cd ../child-react && npm run build",
+    "build:child-vue": "cd ../child-vue && npm run build"
   },
   "dependencies": {
     "fre": "^2.0.0-alpha.1"

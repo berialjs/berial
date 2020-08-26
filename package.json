@@ -13,7 +13,12 @@
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
-    "test": "karma start karma.conf.js"
+    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
+    "demo:init": "cd example/parent && npm run install:all && cd ../..",
+    "demo:serve": "npm run build && cd example/parent && npm start && cd ../..",
+    "demo:build": "npm run build && cd example/parent && npm run build:all",
+    "test": "karma start karma.conf.js",
+    "e2e": "cross-env NODE_ENV=test mocha --timeout 600000 test/e2e/**/*.spec.js"
   },
   "repository": {
     "type": "git",
@@ -35,10 +40,13 @@
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
     "eslint": "^7.5.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.20.5",
+    "execa": "^4.0.3",
+    "http-server": "^0.12.3",
     "husky": "^4.2.5",
     "karma": "^5.1.1",
     "karma-chrome-launcher": "^3.1.0",

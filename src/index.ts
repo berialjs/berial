@@ -1,4 +1,6 @@
-export { start, register } from './app'
-export { mixin, use } from './mixin'
-export { importHtml } from './html-loader'
-export { run } from './sandbox'
+import { start, register } from './app'
+import { mixin, use } from './mixin'
+import { importHtml } from './html-loader'
+import { run } from './sandbox'
+
+export { start, register, importHtml, run, mixin, use }

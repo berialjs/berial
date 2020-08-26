@@ -2,8 +2,6 @@
   "compilerOptions": {
     "strict": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationDir": "dist/types/",
     "noImplicitAny": true,
     "removeComments": true,
     "target": "es6",
@@ -15,7 +13,10 @@
     "jsx": "react",
     "lib": ["es6", "dom"],
     "baseUrl": ".",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["test/*", "node_modules"]

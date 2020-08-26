@@ -1,5 +1,4 @@
 import typescript from 'rollup-plugin-typescript2'
-import dts from 'rollup-plugin-dts'
 
 export default {
   input: 'src/index.ts',
@@ -18,11 +17,10 @@ export default {
     }
   ],
   plugins: [
-    dts(),
     typescript({
       tsconfig: 'tsconfig.json',
       removeComments: true,
-      useTsconfigDeclarationDir: true
-    })
+      useTsconfigDeclarationDir: true,
+    }),
   ]
 }

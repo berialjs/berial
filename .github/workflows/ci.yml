@@ -12,3 +12,5 @@ jobs:
       - run: npm i
       - run: npm run check
       - run: npm run test
+      - run: npm run demo:init
+      - run: npm run e2e
