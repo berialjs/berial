@@ -5,7 +5,7 @@ export function bridgeEvent(): void {
 }
 
 async function boostrap(app): Promise<void> {
-  const shadowRoot = app.host.shadowRoot
+  const shadowRoot = app.host
   const define = Object.defineProperty
   const fromNode = shadowRoot,
     toNode = shadowRoot.host
