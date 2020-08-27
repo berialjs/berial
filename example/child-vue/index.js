@@ -24,10 +24,7 @@ export async function bootstrap() {
 export async function mount({ host }) {
   console.log('vue mount')
 
-  const appNode = host.shadowRoot
-    .getElementById('root')
-    .appendChild(document.createElement('div'))
-
+  const appNode = host.getElementById('root').appendChild(document.createElement('div'))
   mountEl = new Vue({
     el: appNode,
     router,
@@ -39,6 +36,6 @@ export async function unmount({ host }) {
   console.log('vue unmout')
 
   mountEl.$destroy()
-  const root = host.shadowRoot.getElementById('root')
+  const root = host.getElementById('root')
   root.innerHTML = ''
 }
