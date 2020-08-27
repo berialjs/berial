@@ -20,11 +20,11 @@ export async function bootstrap() {
 
 export async function mount({ host }) {
   console.log('fre mount')
-  render(<App />, host.shadowRoot.getElementById('root'))
+  render(<App />, host.getElementById('root'))
 }
 
 export async function unmount({ host }) {
   console.log('fre unmout')
-  const root = host.shadowRoot.getElementById('root')
+  const root = host.getElementById('root')
   root.innerHTML = ''
 }
