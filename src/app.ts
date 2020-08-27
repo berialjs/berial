@@ -101,9 +101,9 @@ async function runLoad(app: App): Promise<any> {
     app.host = loadShadowDOM(app)
     const { lifecycle: selfLife, bodyNode, styleNodes } = await importHtml(app)
     lifecycleCheck(selfLife)
-    app.host.shadowRoot?.appendChild(bodyNode.content.cloneNode(true))
+    app.host?.appendChild(bodyNode.content.cloneNode(true))
     for (const k of reverse(styleNodes))
-      app.host.shadowRoot!.insertBefore(k, app.host.shadowRoot!.firstChild)
+      app.host!.insertBefore(k, app.host!.firstChild)
     app.status = Status.NOT_BOOTSTRAPPED
     app.bootstrap = compose(mixinLife.bootstrap.concat(selfLife.bootstrap))
     app.mount = compose(mixinLife.mount.concat(selfLife.mount))
