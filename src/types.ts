@@ -22,7 +22,7 @@ export type App = {
   name: string
   url: ((props: App['props']) => Lifecycle) | string
   match: (location: Location) => boolean
-  host: HTMLElement
+  host: DocumentFragment
   props: Record<string, unknown>
   status: Status
   loaded?: any
