@@ -76,22 +76,29 @@ export async function loadScript(
   scriptsToLoad.forEach((script) => {
     const lifecycles = run(script, {})[name]
     if (lifecycles) {
-      bootstrap = typeof lifecycles.bootstrap === 'function' ? [...bootstrap, lifecycles.bootstrap] : bootstrap
-      mount = typeof lifecycles.mount === 'function' ? [...mount, lifecycles.mount] : mount
-      unmount = typeof lifecycles.unmount === 'function' ? [...unmount, lifecycles.unmount] : unmount
+      bootstrap =
+        typeof lifecycles.bootstrap === 'function'
+          ? [...bootstrap, lifecycles.bootstrap]
+          : bootstrap
+      mount =
+        typeof lifecycles.mount === 'function'
+          ? [...mount, lifecycles.mount]
+          : mount
+      unmount =
+        typeof lifecycles.unmount === 'function'
+          ? [...unmount, lifecycles.unmount]
+          : unmount
     }
   })
 
   return { bootstrap, unmount, mount }
 }
 
-function parseScript(
-  template: string
-): string[] {
+function parseScript(template: string): string[] {
   const scriptList = []
   SCRIPT_URL_OR_CONTENT_RE.lastIndex = 0
   let match
-  while (match = SCRIPT_URL_OR_CONTENT_RE.exec(template)) {
+  while ((match = SCRIPT_URL_OR_CONTENT_RE.exec(template))) {
     let captured
     if (match[1]) {
       captured = match[1].trim()
