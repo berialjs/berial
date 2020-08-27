@@ -18,6 +18,10 @@ const SCRIPT_CONTENT_RE = new RegExp(
     '>([\\w\\W]+?)<\\s*\\/script>',
   'g'
 )
+const SCRIPT_URL_OR_CONTENT_RE = new RegExp(
+  '(?:' + SCRIPT_URL_RE.source + ')|(?:' + SCRIPT_CONTENT_RE.source + ')',
+  'g'
+)
 const MATCH_NONE_QUOTE_MARK = /[^"]/
 const CSS_URL_RE = new RegExp(
   '<\\s*link[^>]*' +
@@ -59,20 +63,23 @@ export async function loadScript(
   template: string,
   name: string
 ): Promise<Lifecycles> {
-  const { scriptURLs, scripts } = parseScript(template)
-  const fetchedScripts = await Promise.all(
-    scriptURLs.map((url) => request(url))
+  const scriptsToLoad = await Promise.all(
+    parseScript(template).map((v: string) => {
+      if (TEST_URL.test(v)) return request(v)
+      return v
+    })
   )
-  const scriptsToLoad = fetchedScripts.concat(scripts)
 
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
   scriptsToLoad.forEach((script) => {
     const lifecycles = run(script, {})[name]
-    bootstrap = [...bootstrap, lifecycles.bootstrap]
-    mount = [...mount, lifecycles.mount]
-    unmount = [...unmount, lifecycles.unmount]
+    if (lifecycles) {
+      bootstrap = typeof lifecycles.bootstrap === 'function' ? [...bootstrap, lifecycles.bootstrap] : bootstrap
+      mount = typeof lifecycles.mount === 'function' ? [...mount, lifecycles.mount] : mount
+      unmount = typeof lifecycles.unmount === 'function' ? [...unmount, lifecycles.unmount] : unmount
+    }
   })
 
   return { bootstrap, unmount, mount }
@@ -80,37 +87,28 @@ export async function loadScript(
 
 function parseScript(
   template: string
-): {
-  scriptURLs: string[]
-  scripts: string[]
-} {
-  const scriptURLs: string[] = []
-  const scripts: string[] = []
-  SCRIPT_URL_RE.lastIndex = SCRIPT_CONTENT_RE.lastIndex = 0
+): string[] {
+  const scriptList = []
+  SCRIPT_URL_OR_CONTENT_RE.lastIndex = 0
   let match
-  while ((match = SCRIPT_URL_RE.exec(template))) {
-    let captured = match[1].trim()
-    if (!captured) continue
-    if (!TEST_URL.test(captured)) {
-      captured = window.location.origin + captured
+  while (match = SCRIPT_URL_OR_CONTENT_RE.exec(template)) {
+    let captured
+    if (match[1]) {
+      captured = match[1].trim()
+      if (!TEST_URL.test(captured)) {
+        captured = window.location.origin + captured
+      }
+    } else if (match[2]) {
+      captured = match[2].trim()
     }
-    scriptURLs.push(captured)
+    captured && scriptList.push(captured)
   }
-  while ((match = SCRIPT_CONTENT_RE.exec(template))) {
-    const captured = match[1].trim()
-    if (!captured) continue
-    scripts.push(captured)
-  }
-  return {
-    scriptURLs,
-    scripts
-  }
+  return scriptList
 }
 
 async function loadCSS(template: string): Promise<HTMLStyleElement[]> {
-  const cssList = parseCSS(template)
   const styles = await Promise.all(
-    cssList.map((v: string) => {
+    parseCSS(template).map((v: string) => {
       if (TEST_URL.test(v)) return request(v)
       return v
     })
