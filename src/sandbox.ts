@@ -71,7 +71,7 @@ export function run(code: string, options: any = {}): any {
         removeEventListener: removeEventListener.bind(window),
         // eslint-disable-next-line no-shadow
         eval: function (code: string): any {
-          return run('return ' + code, null)
+          return run('return ' + code, {})
         },
         alert: function (): void {
           alert('Sandboxed alert:' + arguments[0])
