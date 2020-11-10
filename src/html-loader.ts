@@ -1,7 +1,7 @@
 import type { App, PromiseFn, Lifecycles } from './types'
 
 import { run } from './sandbox'
-import { request } from './util'
+import { request, nextTick } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
 const SCRIPT_URL_RE = new RegExp(
@@ -55,14 +55,39 @@ export async function importHtml(
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const lifecycle = await loadScript(template, app.name)
+  const lifecycle = await loadScript(template, app)
   return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  name: string
+  { name, host }: any
 ): Promise<Lifecycles> {
+  let bootstrap: PromiseFn[] = []
+  let unmount: PromiseFn[] = []
+  let mount: PromiseFn[] = []
+  let scriptsNextTick: string[] = []
+
+  new MutationObserver((mutations) => {
+    mutations.forEach(async (m: any) => {
+      switch (m.type) {
+        case 'childList':
+          if (m.target !== host) {
+            for (let i = 0; i < m.addedNodes.length; i++) {
+              const node = m.addedNodes[i]
+              if (node instanceof HTMLScriptElement) {
+                const src = node.getAttribute('src') || ''
+                const script = await request(src)
+                scriptsNextTick.push(script)
+              }
+            }
+          }
+          break
+        default:
+      }
+    })
+  }).observe(document, { childList: true, subtree: true })
+
   const scriptsToLoad = await Promise.all(
     parseScript(template).map((v: string) => {
       if (TEST_URL.test(v)) return request(v)
@@ -70,11 +95,8 @@ export async function loadScript(
     })
   )
 
-  let bootstrap: PromiseFn[] = []
-  let unmount: PromiseFn[] = []
-  let mount: PromiseFn[] = []
-  scriptsToLoad.forEach((script) => {
-    const lifecycles = run(script, {})[name]
+  function getLyfecycles(script: string): void {
+    let lifecycles = run(script, {})[name]
     if (lifecycles) {
       bootstrap =
         typeof lifecycles.bootstrap === 'function'
@@ -89,7 +111,10 @@ export async function loadScript(
           ? [...unmount, lifecycles.unmount]
           : unmount
     }
-  })
+  }
+
+  scriptsToLoad.forEach(getLyfecycles)
+  nextTick(() => scriptsNextTick.forEach(getLyfecycles))
 
   return { bootstrap, unmount, mount }
 }

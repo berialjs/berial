@@ -137,7 +137,6 @@ export function run(code: string, options: any = {}): any {
   }
 }
 function checkSyntax(code: string): boolean {
-  Function(code)
   if (/\bimport\s*(?:[(]|\/[*]|\/\/|<!--|-->)/.test(code)) {
     throw new Error('Dynamic imports are blocked')
   }
