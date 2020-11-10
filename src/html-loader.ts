@@ -55,24 +55,24 @@ export async function importHtml(
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const lifecycle = await loadScript(template, app.name)
+  const lifecycle = await loadScript(template, app)
   return { lifecycle, styleNodes, bodyNode }
 }
 
 export async function loadScript(
   template: string,
-  name: string
+  { name, host }: any
 ): Promise<Lifecycles> {
-  var bootstrap: PromiseFn[] = []
-  var unmount: PromiseFn[] = []
-  var mount: PromiseFn[] = []
-  var scriptsNextTick: string[] = []
+  let bootstrap: PromiseFn[] = []
+  let unmount: PromiseFn[] = []
+  let mount: PromiseFn[] = []
+  let scriptsNextTick: string[] = []
 
   new MutationObserver((mutations) => {
     mutations.forEach(async (m: any) => {
       switch (m.type) {
         case 'childList':
-          if (m.target !== 0) {
+          if (m.target !== host) {
             for (let i = 0; i < m.addedNodes.length; i++) {
               const node = m.addedNodes[i]
               if (node instanceof HTMLScriptElement) {
@@ -95,8 +95,8 @@ export async function loadScript(
     })
   )
 
-  function getLyfecycles(script: string) {
-    var lifecycles = run(script, {})[name]
+  function getLyfecycles(script: string): void {
+    let lifecycles = run(script, {})[name]
     if (lifecycles) {
       bootstrap =
         typeof lifecycles.bootstrap === 'function'

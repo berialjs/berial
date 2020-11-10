@@ -46,5 +46,5 @@ export function reverse<T>(arr: T[]): T[] {
 }
 
 export function nextTick(cb: () => void): void {
-  Promise.resolve().then(cb);
+  Promise.resolve().then(cb)
 }
