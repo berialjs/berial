@@ -15,7 +15,7 @@
 
 - scoped css
 
-- proxy sandbox
+- proxy + MutationObserver sandbox
 
 - html loader
 
