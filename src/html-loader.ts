@@ -1,7 +1,7 @@
 import type { App, PromiseFn, Lifecycles } from './types'
 
 import { run } from './sandbox'
-import { request, nextTick } from './util'
+import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
 const SCRIPT_URL_RE = new RegExp(
