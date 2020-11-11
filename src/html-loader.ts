@@ -1,6 +1,5 @@
 import type { App, PromiseFn, Lifecycles } from './types'
-
-import { run } from './sandbox'
+import { run, observeDoucument, getcurrentQueue } from './sandbox'
 import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
@@ -52,6 +51,7 @@ export async function importHtml(
   styleNodes: HTMLStyleElement[]
   bodyNode: HTMLTemplateElement
 }> {
+  observeDoucument(app.host)
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
@@ -61,33 +61,11 @@ export async function importHtml(
 
 export async function loadScript(
   template: string,
-  { name, host }: any
+  { name }: any
 ): Promise<Lifecycles> {
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  let q2: string[] = []
-
-  new MutationObserver((mutations) => {
-    mutations.forEach(async (m: any) => {
-      switch (m.type) {
-        case 'childList':
-          if (m.target !== host) {
-            for (let i = 0; i < m.addedNodes.length; i++) {
-              const node = m.addedNodes[i]
-              if (node instanceof HTMLScriptElement) {
-                const src = node.getAttribute('src') || ''
-                q2.push(src)
-              } else {
-                host.appendChild(node)
-              }
-            }
-          }
-          break
-        default:
-      }
-    })
-  }).observe(document, { childList: true, subtree: true })
 
   function process(queue: any): void {
     Promise.all(
@@ -96,7 +74,9 @@ export async function loadScript(
         return v
       })
     ).then((q1: any) => {
-      q1.splice(0, q1.length).forEach(getLyfecycles)
+      queue.length = 0
+      q1.forEach(getLyfecycles)
+      const q2 = getcurrentQueue()
       if (q2.length > 0) process(q2)
     })
   }
@@ -119,7 +99,6 @@ export async function loadScript(
           : unmount
     }
   }
-
   return { bootstrap, unmount, mount }
 }
 
