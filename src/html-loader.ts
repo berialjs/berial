@@ -1,7 +1,6 @@
 import type { App, PromiseFn, Lifecycles } from './types'
-
-import { run } from './sandbox'
-import { request, nextTick } from './util'
+import { run, observeDoucument, getcurrentQueue } from './sandbox'
+import { request } from './util'
 
 const MATCH_ANY_OR_NO_PROPERTY = /["'=\w\s\/]*/
 const SCRIPT_URL_RE = new RegExp(
@@ -52,6 +51,7 @@ export async function importHtml(
   styleNodes: HTMLStyleElement[]
   bodyNode: HTMLTemplateElement
 }> {
+  observeDoucument(app.host)
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
@@ -61,39 +61,26 @@ export async function importHtml(
 
 export async function loadScript(
   template: string,
-  { name, host }: any
+  { name }: any
 ): Promise<Lifecycles> {
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  let scriptsNextTick: string[] = []
-
-  new MutationObserver((mutations) => {
-    mutations.forEach(async (m: any) => {
-      switch (m.type) {
-        case 'childList':
-          if (m.target !== host) {
-            for (let i = 0; i < m.addedNodes.length; i++) {
-              const node = m.addedNodes[i]
-              if (node instanceof HTMLScriptElement) {
-                const src = node.getAttribute('src') || ''
-                const script = await request(src)
-                scriptsNextTick.push(script)
-              }
-            }
-          }
-          break
-        default:
-      }
+  
+  function process(queue: any): void {
+    Promise.all(
+      queue.map((v: string) => {
+        if (TEST_URL.test(v)) return request(v)
+        return v
+      })
+    ).then((q1: any) => {
+      queue.length = 0
+      q1.forEach(getLyfecycles)
+      const q2 = getcurrentQueue()
+      if (q2.length > 0) process(q2)
     })
-  }).observe(document, { childList: true, subtree: true })
-
-  const scriptsToLoad = await Promise.all(
-    parseScript(template).map((v: string) => {
-      if (TEST_URL.test(v)) return request(v)
-      return v
-    })
-  )
+  }
+  process(parseScript(template))
 
   function getLyfecycles(script: string): void {
     let lifecycles = run(script, {})[name]
@@ -112,10 +99,6 @@ export async function loadScript(
           : unmount
     }
   }
-
-  scriptsToLoad.forEach(getLyfecycles)
-  nextTick(() => scriptsNextTick.forEach(getLyfecycles))
-
   return { bootstrap, unmount, mount }
 }
 

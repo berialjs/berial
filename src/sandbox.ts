@@ -1,3 +1,5 @@
+let queue: string[] = []
+
 export function run(code: string, options: any = {}): any {
   try {
     if (checkSyntax(code)) {
@@ -136,6 +138,34 @@ export function run(code: string, options: any = {}): any {
     throw e
   }
 }
+
+export function observeDoucument(host: any): void {
+  new MutationObserver((mutations) => {
+    mutations.forEach(async (m: any) => {
+      switch (m.type) {
+        case 'childList':
+          if (m.target !== host) {
+            for (let i = 0; i < m.addedNodes.length; i++) {
+              const node = m.addedNodes[i]
+              if (node instanceof HTMLScriptElement) {
+                const src = node.getAttribute('src') || ''
+                queue.push(src)
+              } else {
+                host.appendChild(node)
+              }
+            }
+          }
+          break
+        default:
+      }
+    })
+  }).observe(document, { childList: true, subtree: true })
+}
+
+export function getcurrentQueue(): any {
+  return queue
+}
+
 function checkSyntax(code: string): boolean {
   if (/\bimport\s*(?:[(]|\/[*]|\/\/|<!--|-->)/.test(code)) {
     throw new Error('Dynamic imports are blocked')
