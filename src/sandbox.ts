@@ -141,7 +141,7 @@ export function run(code: string, options: any = {}): any {
 
 export function observeDoucument(host: any): void {
   new MutationObserver((mutations) => {
-    mutations.forEach(async (m: any) => {
+    mutations.forEach((m: any) => {
       switch (m.type) {
         case 'childList':
           if (m.target !== host) {
