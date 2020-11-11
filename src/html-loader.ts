@@ -78,6 +78,8 @@ export async function loadScript(
               if (node instanceof HTMLScriptElement) {
                 const src = node.getAttribute('src') || ''
                 q2.push(src)
+              } else {
+                host.appendChild(node)
               }
             }
           }
@@ -86,6 +88,19 @@ export async function loadScript(
       }
     })
   }).observe(document, { childList: true, subtree: true })
+
+  function process(queue: any): void {
+    Promise.all(
+      queue.map((v: string) => {
+        if (TEST_URL.test(v)) return request(v)
+        return v
+      })
+    ).then((q1: any) => {
+      q1.splice(0, q1.length).forEach(getLyfecycles)
+      if (q2.length > 0) process(q2)
+    })
+  }
+  process(parseScript(template))
 
   function getLyfecycles(script: string): void {
     let lifecycles = run(script, {})[name]
@@ -104,19 +119,7 @@ export async function loadScript(
           : unmount
     }
   }
-  function process(queue: any): void {
-    Promise.all(
-      queue.map((v: string) => {
-        if (TEST_URL.test(v)) return request(v)
-        return v
-      })
-    ).then((q1: any) => {
-      q1.forEach(getLyfecycles)
-      if (q2.length > 0) process(q2)
-    })
-  }
-  process(parseScript(template))
-  
+
   return { bootstrap, unmount, mount }
 }
 
