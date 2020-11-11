@@ -61,7 +61,7 @@ export async function importHtml(
 
 export async function loadScript(
   template: string,
-  { name }: any
+  { name, host }: any
 ): Promise<Lifecycles> {
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
@@ -69,14 +69,10 @@ export async function loadScript(
   
   function process(queue: any): void {
     Promise.all(
-      queue.map((v: string) => {
-        if (TEST_URL.test(v)) return request(v)
-        return v
-      })
+      queue.map((v: string) => (TEST_URL.test(v) ? request(v) : v))
     ).then((q1: any) => {
-      queue.length = 0
       q1.forEach(getLyfecycles)
-      const q2 = getcurrentQueue()
+      const q2 = getcurrentQueue(host)
       if (q2.length > 0) process(q2)
     })
   }

@@ -2,6 +2,7 @@ import type { App } from './types'
 import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
 import { lifecycleCheck, reverse } from './util'
+import { observeDoucument } from './sandbox'
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
   LOADING = 'LOADING',
@@ -29,6 +30,7 @@ export function register(name: string, url: string, match: any): void {
 
 export function start(): void {
   started = true
+  observeDoucument()
   reroute()
 }
 
