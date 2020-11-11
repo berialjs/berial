@@ -66,7 +66,7 @@ export async function loadScript(
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  let scriptsNextTick: string[] = []
+  let q2: string[] = []
 
   new MutationObserver((mutations) => {
     mutations.forEach(async (m: any) => {
@@ -77,8 +77,7 @@ export async function loadScript(
               const node = m.addedNodes[i]
               if (node instanceof HTMLScriptElement) {
                 const src = node.getAttribute('src') || ''
-                const script = await request(src)
-                scriptsNextTick.push(script)
+                q2.push(src)
               }
             }
           }
@@ -87,13 +86,6 @@ export async function loadScript(
       }
     })
   }).observe(document, { childList: true, subtree: true })
-
-  const scriptsToLoad = await Promise.all(
-    parseScript(template).map((v: string) => {
-      if (TEST_URL.test(v)) return request(v)
-      return v
-    })
-  )
 
   function getLyfecycles(script: string): void {
     let lifecycles = run(script, {})[name]
@@ -112,10 +104,19 @@ export async function loadScript(
           : unmount
     }
   }
-
-  scriptsToLoad.forEach(getLyfecycles)
-  nextTick(() => scriptsNextTick.forEach(getLyfecycles))
-
+  function process(queue: any): void {
+    Promise.all(
+      queue.map((v: string) => {
+        if (TEST_URL.test(v)) return request(v)
+        return v
+      })
+    ).then((q1: any) => {
+      q1.forEach(getLyfecycles)
+      if (q2.length > 0) process(q2)
+    })
+  }
+  process(parseScript(template))
+  
   return { bootstrap, unmount, mount }
 }
 
