@@ -159,7 +159,7 @@ export function observeDoucument(): any {
 }
 
 export function getcurrentQueue(host: any): any {
-  let q = queue.filter((v: any) => v.target != host) // save
+  let q = queue.filter((v: any) => v.target != host).map((v: any) => v.src) // save
   queue.length = 0 // cleanup
   return q
 }

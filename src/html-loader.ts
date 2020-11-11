@@ -68,8 +68,7 @@ export async function loadScript(
 
   function process(queue: any): void {
     Promise.all(
-      queue
-        .map((v: string) => (TEST_URL.test(v) ? request(v) : v))
+      queue.map((v: string) => (TEST_URL.test(v) ? request(v) : v))
     ).then((q1: any) => {
       q1.forEach(getLyfecycles)
       const q2 = getcurrentQueue(host)

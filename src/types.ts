@@ -31,7 +31,7 @@ export type App = {
   unmount: PromiseFn
   mount: PromiseFn
   bootstrap: PromiseFn
-  mo:MutationObserver
+  mo: MutationObserver
 }
 
 export type PromiseFn = (...args: any[]) => Promise<any>
