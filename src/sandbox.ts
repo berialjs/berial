@@ -1,4 +1,4 @@
-let queue: string[] = []
+let queue: any[] = []
 
 export function run(code: string, options: any = {}): any {
   try {
@@ -139,20 +139,16 @@ export function run(code: string, options: any = {}): any {
   }
 }
 
-export function observeDoucument(host: any): void {
+export function observeDoucument(): any {
   new MutationObserver((mutations) => {
     mutations.forEach(async (m: any) => {
       switch (m.type) {
         case 'childList':
-          if (m.target !== host) {
-            for (let i = 0; i < m.addedNodes.length; i++) {
-              const node = m.addedNodes[i]
-              if (node instanceof HTMLScriptElement) {
-                const src = node.getAttribute('src') || ''
-                queue.push(src)
-              } else {
-                host.appendChild(node)
-              }
+          for (let i = 0; i < m.addedNodes.length; i++) {
+            const node = m.addedNodes[i]
+            if (node instanceof HTMLScriptElement) {
+              const src = node.getAttribute('src') || ''
+              queue.push({ target: m.target, src })
             }
           }
           break
@@ -162,8 +158,10 @@ export function observeDoucument(host: any): void {
   }).observe(document, { childList: true, subtree: true })
 }
 
-export function getcurrentQueue(): any {
-  return queue
+export function getcurrentQueue(host: any): any {
+  let q = queue.filter((v: any) => v.target != host) // save
+  queue.length = 0 // cleanup
+  return q
 }
 
 function checkSyntax(code: string): boolean {
