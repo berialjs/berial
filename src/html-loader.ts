@@ -51,7 +51,6 @@ export async function importHtml(
   styleNodes: HTMLStyleElement[]
   bodyNode: HTMLTemplateElement
 }> {
-  observeDoucument(app.host)
   const template = await request(app.url as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
