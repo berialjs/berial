@@ -65,7 +65,7 @@ export async function loadScript(
   let bootstrap: PromiseFn[] = []
   let unmount: PromiseFn[] = []
   let mount: PromiseFn[] = []
-  
+
   function process(queue: any): void {
     Promise.all(
       queue.map((v: string) => (TEST_URL.test(v) ? request(v) : v))
