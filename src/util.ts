@@ -41,10 +41,6 @@ export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
   })
 }
 
-export function reverse<T>(arr: T[]): T[] {
-  return Array.from(arr).reverse()
-}
-
 export function nextTick(cb: () => void): void {
   Promise.resolve().then(cb)
 }
