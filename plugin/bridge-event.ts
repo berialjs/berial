@@ -13,7 +13,6 @@ async function boostrap(app): Promise<void> {
     fromNode.addEventListener(eventName, (fromEvent) => {
       fromEvent.stopPropagation()
       const Event = fromEvent.constructor
-      // @ts-ignore
       const toEvent = new Event(eventName, {
         ...fromEvent,
         bubbles: true,
