@@ -1,8 +1,9 @@
-import { importHtml, loadScript } from './html-loader'
+import { importHtml } from './html-loader'
 
 const hostMap = new Map()
 
 const path = '/a/c'
+const stack = path.split('/')
 
 export class Entity extends HTMLElement {
   constructor() {
@@ -11,11 +12,7 @@ export class Entity extends HTMLElement {
   }
   connectCallback(): void {
     connect(this) // load every entity, wait to load
-    if (!this.firstChild && !this.nextElementSibling) {
-      //this is the last element
-      const stack = path.split('/')
-      load(hostMap.get('root'), stack)
-    }
+    load(this)
   }
 }
 
@@ -30,30 +27,29 @@ async function connect(host: any): Promise<any> {
   host['b-rc'] = []
 
   // find the neartist parent and push a promise
-  //   let p = host
-  //   while ((p = p.parentNode)) {
-  //     if (p) {
-  //       p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
-  //       p['b-rc'].push(load.bind(null, host))
-  //       host.parent = p
-  //       break
-  //     }
-  //   }
+  let p = host
+  while ((p = p.parentNode)) {
+    if (p && p['b-p']) {
+      p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
+      p['b-rc'].push(load.bind(null, host))
+      host['b-l'] = p['b-l'] + 1
+      break
+    } else {
+      p['b-l'] = 1
+    }
+  }
   hostMap.set(host.slot || 'root', host)
 }
 
-function load(host: any, stack: any): void {
+function load(host: any): void {
   host.lifecycle.load(host)
-  const peek = stack.shift()
-  if (peek) {
+  const name = stack[host['b-l']] // a
+  if (name) {
     const slot = document.createElement('slot')
-    slot.innerHTML = `<slot name=${peek}></slot>`
+    slot.innerHTML = `<slot name=${name}></slot>`
     host.appendChild(slot)
-    load(hostMap.get(peek), stack)
-  } else {
-    // bubbling
-    mount(host)
   }
+  host['b-rc'].filter((r: any) => r.slot === name).forEach((r: any) => r())
 }
 
 function mount(host: any): void {
