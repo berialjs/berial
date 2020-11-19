@@ -31,7 +31,7 @@ async function connect(host: any): Promise<any> {
   styleNodes.forEach((s) => frag.appendChild(s))
   frag.appendChild(bodyNode.content.cloneNode(true))
   host.appendChild(frag)
-  host.lifecycle = lifecycle
+  host['b-lc'] = lifecycle
   host['b-p'] = []
   host['b-rc'] = []
 
@@ -54,7 +54,7 @@ async function connect(host: any): Promise<any> {
 
 function load(host: any): void {
   if (host.tag & Tags.Loaded) return host
-  host.lifecycle.load(host)
+  host['b-lc'].load(host)
   const name = stack[host['b-l']] // a
   if (name) {
     const slot = document.createElement('slot')
@@ -74,16 +74,16 @@ function load(host: any): void {
 
 function mount(host: any): void {
   if (host.tag & Tags.Mounted) {
-    host.lifecycle.unmount(host)
+    host['b-lc'].unmount(host)
   }
-  host.lifecycle.mount(host).then((res: any) => {
+  host['b-lc'].mount(host).then((res: any) => {
     host['b-r'] && host['b-r'](res)
     host.tag |= Tags.Mounted
   })
 }
 
 function unmount(host: any): void {
-  host.lifecycle.unmout(host)
+  host['b-lc'].unmout(host)
   host.tag = Tags.Loaded
 }
 
