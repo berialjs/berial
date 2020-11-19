@@ -1,4 +1,4 @@
-import type { App, PromiseFn, Lifecycles } from './types'
+import type { Lifecycles } from './types'
 import { run, observeDoucument, getcurrentQueue } from './sandbox'
 import { request } from './util'
 
@@ -45,27 +45,20 @@ const TEST_URL = /^(?:https?):\/\/[-a-zA-Z0-9.]+/
 const REPLACED_BY_BERIAL = 'Script replaced by Berial.'
 
 export async function importHtml(
-  app: App
+  host: any
 ): Promise<{
   lifecycle: Lifecycles
   styleNodes: HTMLStyleElement[]
   bodyNode: HTMLTemplateElement
 }> {
-  const template = await request(app.url as string)
+  const template = await request(host.path as string)
   const styleNodes = await loadCSS(template)
   const bodyNode = loadBody(template)
-  const lifecycle = await loadScript(template, app)
+  const lifecycle = await loadScript(template, host)
   return { lifecycle, styleNodes, bodyNode }
 }
 
-export async function loadScript(
-  template: string,
-  { name, host }: any
-): Promise<Lifecycles> {
-  let bootstrap: PromiseFn[] = []
-  let unmount: PromiseFn[] = []
-  let mount: PromiseFn[] = []
-  
+export async function loadScript(template: string, host: any): Promise<any> {
   function process(queue: any): void {
     Promise.all(
       queue.map((v: string) => (TEST_URL.test(v) ? request(v) : v))
@@ -78,23 +71,8 @@ export async function loadScript(
   process(parseScript(template))
 
   function getLyfecycles(script: string): void {
-    let lifecycles = run(script, {})[name]
-    if (lifecycles) {
-      bootstrap =
-        typeof lifecycles.bootstrap === 'function'
-          ? [...bootstrap, lifecycles.bootstrap]
-          : bootstrap
-      mount =
-        typeof lifecycles.mount === 'function'
-          ? [...mount, lifecycles.mount]
-          : mount
-      unmount =
-        typeof lifecycles.unmount === 'function'
-          ? [...unmount, lifecycles.unmount]
-          : unmount
-    }
+    return run(script, {})[host.slot]
   }
-  return { bootstrap, unmount, mount }
 }
 
 function parseScript(template: string): string[] {

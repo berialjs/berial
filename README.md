@@ -7,57 +7,32 @@
 <a href="https://npmjs.com/package/berial"><img src="https://img.shields.io/npm/dt/berial.svg" alt="npm-d"></a>
 </p>
 
-### Feature
+### Why Berial
 
-- lifecycle loop
+Berial is a new approach to a popular idea: build a javascript framework for front-end microservices.
 
-- shadow dom
+There are any wonderful features of it, such as Asynchronous rendering pipeline (like React Fiber), Web components (shadow DOM + scoped css), JavaScript sandbox (Proxy + MutationObserver).
 
-- scoped css
-
-- proxy + MutationObserver sandbox
-
-- html loader
-
-- mixins
+Note: diffence form fre, Berial will pay attention to business value.
 
 ### Use
 
 ```html
-<one-app></one-app>
+<router-view>
+  <router-view slot="a">
+    <router-view slot="b"></router-view>
+    <router-view slot="c"></router-view>
+  </router-view>
+</router-view>
 
-<two-app></two-app>
+<script type="module">
+  import { Entity } from 'berial'
+  // 注册所有实例
+  window.customElements.define('reuter-view', Entity)
+  // 切换路由，自动匹配实例到 slot 中
+  window.history.push('/a/b')
+</script>
 ```
-
-```js
-import { register, start } from 'berial'
-
-register(
-  'one-app',
-  'http://localhost:3000/one.html',
-  (location) => location.hash === '#/app1'
-)
-register(
-  'two-app',
-  'http://localhost:3000/two.html',
-  (location) => location.hash === '#/app2'
-)
-start()
-```
-
-### mixins
-
-```js
-import { mixin } from 'berial'
-
-mixin({
-  bootstrap: () => {},
-  mount: () => {},
-  unmount: () => {}
-})
-```
-
-mixins will apply all apps
 
 ### License
 
