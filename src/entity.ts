@@ -30,7 +30,7 @@ async function connect(host: any): Promise<any> {
   const frag = document.createDocumentFragment()
   styleNodes.forEach((s) => frag.appendChild(s))
   frag.appendChild(bodyNode.content.cloneNode(true))
-  host.appendChild(frag)
+  host.shadowRoot.appendChild(frag)
   host['b-lc'] = lifecycle
   host['b-p'] = []
   host['b-rc'] = []
@@ -44,7 +44,7 @@ async function connect(host: any): Promise<any> {
       host['b-l'] = p['b-l'] + 1
       break
     } else {
-      p['b-l'] = 1
+      host['b-l'] = 1
     }
   }
   hostMap.set(host.slot || 'root', host)
