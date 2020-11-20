@@ -19,7 +19,7 @@
         constructor() {
           super()
           // 模拟生命周期
-          this['b-lc'] = {
+          this.lifecycle = {
             load(host) {
               console.log('load', host)
             },
@@ -30,6 +30,8 @@
               console.log('unmount', host)
             }
           }
+          //   this.baseUrl = '/example'
+          this.urlStack = ['', 'a', 'c']
         }
       }
       // 注册所有实例

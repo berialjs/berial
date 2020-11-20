@@ -1,8 +1,6 @@
-import { importHtml, loadScript } from './html-loader'
+import { importHtml } from './html-loader'
 
 let root: any = null
-// const stack = window.location.pathname.split('/')
-const stack = ['root', 'a', 'c']
 
 const enum Tags {
   Connected = 1 << 1,
@@ -12,10 +10,13 @@ const enum Tags {
 }
 
 export class Entity extends HTMLElement {
-  slots: any
+  baseUrl: string
+  urlStack:any
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
+    this.baseUrl = '/'
+    this.urlStack = window.location.pathname.split('/')
   }
   connectedCallback(): void {
     connect(this)
@@ -35,7 +36,7 @@ async function connect(host: any): Promise<any> {
   while ((p = p.parentNode)) {
     if (p && p['b-p']) {
       host['b-l'] = p['b-l'] + 1
-      if (host.slot === stack[host['b-l'] - 1]) {
+      if (host.slot === host.urlStack[host['b-l'] - 1]) {
         p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
         p['b-rc'].unshift(mount.bind(null, host))
       }
@@ -71,7 +72,7 @@ async function load(host: any): Promise<any> {
       styleNodes.forEach((s) => frag.appendChild(s))
       frag.appendChild(bodyNode.content.cloneNode(true))
       host.shadowRoot.appendChild(frag)
-      host['b-lc'] = lifecycle
+      host.lifecycle = lifecycle
     } else {
       const template = document.createElement('template')
       template.innerHTML = `
@@ -81,21 +82,21 @@ async function load(host: any): Promise<any> {
     }
     host.loaded = true
   }
-  const name = stack[host['b-l']]
+  const name = host.urlStack[host['b-l']]
   if (name) {
     const template = document.createElement('template')
     template.innerHTML = `<slot name='${name}'></slot>`
     host.shadowRoot.appendChild(template.content.cloneNode(true))
   }
-  if (host.slot === '' || host.slot === stack[host['b-l'] - 1]) {
-    host['b-lc'].load(host)
+  if (host.slot === '' || host.slot === host.urlStack[host['b-l'] - 1]) {
+    host.lifecycle.load(host)
   }
 }
 
 function mount(host: any): void {
   if (host.tag & Tags.Mounted) return
   let p = Promise.resolve() as any
-  p = host['b-lc'].mount(host)
+  p = host.lifecycle.mount(host)
 
   if (p && typeof p.then === 'function') {
     p.then(() => {
@@ -109,7 +110,7 @@ function mount(host: any): void {
 }
 
 function unmount(host: any): void {
-  host['b-lc'].unmount(host)
+  host.lifecycle.unmount(host)
   host.tag = Tags.Loaded
 }
 
