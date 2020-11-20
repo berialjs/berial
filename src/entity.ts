@@ -14,12 +14,12 @@ const enum Tags {
 export class Entity extends HTMLElement {
   constructor() {
     super()
-    // const name = stack[this['b-l']]
-    // if (name) {
-    //   const template = document.createElement('template')
-    //   template.innerHTML = `<slot name=${name}></slot>`
-    // }
-    this.attachShadow({ mode: 'open' })
+    const template = document.createElement('template')
+    template.innerHTML = `<slot name=''></slot>`
+
+    this.attachShadow({ mode: 'open' }).appendChild(
+      template.content.cloneNode(true)
+    )
   }
   connectedCallback(): void {
     connect(this) // load every entity, wait to load
@@ -49,18 +49,21 @@ async function connect(host: any): Promise<any> {
     if (p && p['b-p']) {
       p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
       p['b-rc'].push(mount.bind(null, host))
-      Promise.all(p['b-p']).then((res) => {
-        console.log(1)
-        mount(p)
-      })
       host['b-l'] = p['b-l'] + 1
       break
     } else {
       host['b-l'] = 1
     }
   }
+  if (p && p['b-p']) {
+    Promise.all(p['b-p']).then((res) => {
+      mount(p)
+      p['b-p'] = null
+    })
+  }
+
   if (!host.nextElementSibling && !host.firstChild) {
-    p['b-rc'].map((r:any) => r())
+    p['b-rc'].map((r: any) => r())
   }
   hostMap.set(host.slot || 'root', host)
   host.tag |= Tags.Connected
@@ -68,10 +71,9 @@ async function connect(host: any): Promise<any> {
 }
 
 function mount(host: any): void {
+  if (host.tag & Tags.Mounted) return
+
   let p = Promise.resolve()
-  if (host.tag & Tags.Mounted) {
-    p = host['b-lc'].unmount(host)
-  }
   p = host['b-lc'].mount(host)
 
   if (p && typeof p.then === 'function') {
