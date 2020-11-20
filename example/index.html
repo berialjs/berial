@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <router-view>
+      <router-view slot="a">
+        <router-view slot="b"></router-view>
+        <router-view slot="c"></router-view>
+      </router-view>
+    </router-view>
+
+    <script type="module">
+      import { Entity } from '../dist/berial.esm.js'
+      class MyEntity extends Entity {
+        constructor() {
+          super()
+          // 模拟生命周期
+          this['b-lc'] = {
+            load(host) {
+              console.log('load', host)
+            },
+            mount(host) {
+              console.log('mount', host)
+            },
+            unmount(host) {
+              console.log('unmount', host)
+            }
+          }
+        }
+      }
+      // 注册所有实例
+      window.customElements.define('router-view', MyEntity)
+      // 切换路由，自动匹配实例到 slot 中
+      //   history.pushState({}, '', '/a/b')
+    </script>
+  </body>
+</html>

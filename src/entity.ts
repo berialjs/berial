@@ -1,7 +1,8 @@
 import { importHtml } from './html-loader'
 
 const hostMap = new Map()
-const stack = window.location.pathname.split('/')
+// const stack = window.location.pathname.split('/')
+const stack = ['root', 'a', 'c']
 
 const enum Tags {
   Connected = 1 << 1,
@@ -13,11 +14,15 @@ const enum Tags {
 export class Entity extends HTMLElement {
   constructor() {
     super()
+    // const name = stack[this['b-l']]
+    // if (name) {
+    //   const template = document.createElement('template')
+    //   template.innerHTML = `<slot name=${name}></slot>`
+    // }
     this.attachShadow({ mode: 'open' })
   }
-  connectCallback(): void {
+  connectedCallback(): void {
     connect(this) // load every entity, wait to load
-    load(this)
   }
   disconnectedCallback(): void {
     unmount(this)
@@ -36,52 +41,48 @@ async function connect(host: any): Promise<any> {
   }
   host['b-p'] = []
   host['b-rc'] = []
+  host['b-lc'].load(host)
 
   // find the neartist parent and push a promise
   let p = host
   while ((p = p.parentNode)) {
     if (p && p['b-p']) {
       p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
-      p['b-rc'].push(load.bind(null, host))
+      p['b-rc'].push(mount.bind(null, host))
+      Promise.all(p['b-p']).then((res) => {
+        console.log(1)
+        mount(p)
+      })
       host['b-l'] = p['b-l'] + 1
       break
     } else {
       host['b-l'] = 1
     }
   }
+  if (!host.nextElementSibling && !host.firstChild) {
+    p['b-rc'].map((r:any) => r())
+  }
   hostMap.set(host.slot || 'root', host)
   host.tag |= Tags.Connected
   return host
 }
 
-function load(host: any): void {
-  if (host.tag & Tags.Loaded) return host
-  host['b-lc'].load(host)
-  const name = stack[host['b-l']] // a
-  if (name) {
-    const slot = document.createElement('slot')
-    slot.innerHTML = `<slot name=${name}></slot>`
-    host.appendChild(slot)
-    const match = (r: any): boolean => r.slot === name
-    host['b-rc'].filter(match).forEach((r: any) => r())
-    Promise.all(host['b-rc'].filter(match)).then((): void => {
-      host.tag |= Tags.Loaded
-      mount(host)
+function mount(host: any): void {
+  let p = Promise.resolve()
+  if (host.tag & Tags.Mounted) {
+    p = host['b-lc'].unmount(host)
+  }
+  p = host['b-lc'].mount(host)
+
+  if (p && typeof p.then === 'function') {
+    p.then((res: any) => {
+      host['b-r'] && host['b-r'](res)
+      host.tag |= Tags.Mounted
     })
   } else {
-    host.tag |= Tags.Loaded
-    mount(host)
-  }
-}
-
-function mount(host: any): void {
-  if (host.tag & Tags.Mounted) {
-    host['b-lc'].unmount(host)
-  }
-  host['b-lc'].mount(host).then((res: any) => {
-    host['b-r'] && host['b-r'](res)
+    host['b-r'] && host['b-r']()
     host.tag |= Tags.Mounted
-  })
+  }
 }
 
 function unmount(host: any): void {
@@ -91,7 +92,6 @@ function unmount(host: any): void {
 
 function reroute(): void {
   const root = hostMap.get('root')
-  load(root)
 }
 
 const captured = {
