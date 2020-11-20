@@ -44,7 +44,7 @@ async function connect(host: any): Promise<any> {
       host['b-l'] = p['b-l'] + 1
       break
     } else {
-      p['b-l'] = 1
+      host['b-l'] = 1
     }
   }
   hostMap.set(host.slot || 'root', host)
