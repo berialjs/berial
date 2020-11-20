@@ -11,7 +11,7 @@ const enum Tags {
 
 export class Entity extends HTMLElement {
   baseUrl: string
-  urlStack:any
+  urlStack: any
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })

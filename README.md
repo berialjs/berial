@@ -18,11 +18,9 @@ Note: diffence form fre, Berial will pay attention to business value.
 ### Use
 
 ```html
-<router-view>
-  <router-view slot="a">
-    <router-view slot="b"></router-view>
-    <router-view slot="c"></router-view>
-  </router-view>
+<router-view slot="a" path="a.html">
+  <router-view slot="b" path="b.html"></router-view>
+  <router-view slot="c" path="c.html"></router-view>
 </router-view>
 
 <script type="module">
