@@ -26,12 +26,14 @@ export class Entity extends HTMLElement {
 
 async function connect(host: any): Promise<any> {
   if (host.tag & Tags.Connected) return host
-  const { lifecycle, bodyNode, styleNodes } = await importHtml(host)
-  const frag = document.createDocumentFragment()
-  styleNodes.forEach((s) => frag.appendChild(s))
-  frag.appendChild(bodyNode.content.cloneNode(true))
-  host.shadowRoot.appendChild(frag)
-  host['b-lc'] = lifecycle
+  if (host.path) {
+    const { lifecycle, bodyNode, styleNodes } = await importHtml(host)
+    const frag = document.createDocumentFragment()
+    styleNodes.forEach((s) => frag.appendChild(s))
+    frag.appendChild(bodyNode.content.cloneNode(true))
+    host.shadowRoot.appendChild(frag)
+    host['b-lc'] = lifecycle
+  }
   host['b-p'] = []
   host['b-rc'] = []
 
