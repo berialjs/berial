@@ -15,6 +15,7 @@
 
     <script type="module">
       import { Entity } from '../dist/berial.esm.js'
+
       class MyEntity extends Entity {
         constructor() {
           super()
@@ -30,14 +31,10 @@
               console.log('unmount', host)
             }
           }
-          //   this.baseUrl = '/example'
           this.urlStack = ['', 'a', 'c']
         }
       }
-      // 注册所有实例
       window.customElements.define('router-view', MyEntity)
-      // 切换路由，自动匹配实例到 slot 中
-      //   history.pushState({}, '', '/a/b')
     </script>
   </body>
 </html>
