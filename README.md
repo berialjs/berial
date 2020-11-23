@@ -26,7 +26,7 @@ Note: diffence form fre, Berial will pay attention to business value.
 <script type="module">
   import { Entity } from 'berial'
   // 注册所有实例
-  window.customElements.define('reuter-view', Entity)
+  window.customElements.define('router-view', Entity)
   // 切换路由，自动匹配实例到 slot 中
   window.history.push('/a/b')
 </script>
