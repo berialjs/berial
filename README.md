@@ -1,40 +1,39 @@
-### unnamed
+<p align="center"><img src="https://avatars0.githubusercontent.com/u/68577605?s=200&v=4" alt="berial logo" width="150"></p>
+<h1 align="center">Berial</h1>
+<p align="center">:imp: Simple micro-front-end framework.</p>
+<p align="center">
+<a href="https://github.com/berialjs/berial/actions"><img src="https://img.shields.io/github/workflow/status/berialjs/berial/ci.svg" alt="Build Status"></a>
+<a href="https://npmjs.com/package/berial"><img src="https://img.shields.io/npm/v/berial.svg" alt="npm-v"></a>
+<a href="https://npmjs.com/package/berial"><img src="https://img.shields.io/npm/dt/berial.svg" alt="npm-d"></a>
+</p>
 
-> 一个微前端模型
+### Why Berial
 
-目前这个 demo 中，总体机制和 qiankun 类似，都是使用 umd 的打包方式，往 window 变量上挂载生命周期
+Berial is a new approach to a popular idea: build a javascript framework for front-end microservices.
 
-之所以增加沙箱，是为了解决多个实例共存的污染问题，比如全局变量，事件污染，同一个依赖的版本不统一等等
+There are any wonderful features of it, such as Asynchronous rendering pipeline (like React Fiber), Web components (shadow DOM + scoped css), JavaScript sandbox (Proxy + MutationObserver).
 
-多个子应用之间，最好不共享状态和依赖，理想状态是各干各的，互不相干
+Note: diffence form fre, Berial will pay attention to business value.
 
-沙箱不对 module federation 进行拦截
+### Use
 
-module federation 说白了就是将 import() 语法糖引入的 module 挂到一个类似 window 的全局变量上，我们的沙箱不对这个变量做隔离
+```html
+<one-app></one-app>
+<two-app></two-app>
 
-所以如果需要共享组件/依赖/状态，可以通过 module federation
-
-```js
-import { register } from './dist/mfe'
-
-register([
-	{
-		name: 'child-fre',
-    url: 'https://berial-child-fre.vercel.app',
-    path: ({ pathname }) => pathname !== '/react' && pathname !== '/vue'
-
-    scripts: [], // 可选
-    styles: [], // 可选
-	},
-	{
-		name: 'child-react',
-		url: 'https://berial-child-react.vercel.app',
-		path: ({ pathname }) => pathname === '/react'
-	},
-	{
-		name: 'child-vue',
-		url: 'https://berial-child-vue.vercel.app',
-		path: ({ pathname }) => pathname === '/vue'
-	}
-])
+<script type="module">
+  import { register } from 'berial'
+  register([{
+    name: 'one-app'
+    url: '1.html'
+    allowList: {} // 沙箱白名单
+  },{
+    name: 'two-app'
+    scripts: ['2.js'] // 可选
+  }])
+</script>
 ```
+
+### License
+
+MIT ©yisar ©h-a-n-a
