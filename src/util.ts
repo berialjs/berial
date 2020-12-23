@@ -17,30 +17,12 @@ export function error(trigger: any, msg?: any): void {
 }
 
 export function request(url: string, option?: RequestInit): Promise<string> {
-  console.log(url)
-  if (!window.fetch) {
-    error(
-      "It looks like that your browser doesn't support fetch. Polyfill is needed before you use it."
-    )
-  }
-
   return fetch(url, {
     mode: 'cors',
     ...option
   }).then((res) => res.text())
 }
 
-export function lifecycleCheck(lifecycle: Lifecycle | Lifecycles): void {
-  const keys = ['bootstrap', 'mount', 'unmount']
-  keys.forEach((key) => {
-    if (!(key in lifecycle)) {
-      error(
-        `It looks like that you didn't export the lifecycle hook [${key}], which would cause a mistake.`
-      )
-    }
-  })
-}
-
-export function nextTick(cb: () => void): void {
-  Promise.resolve().then(cb)
+export function reverse<T>(arr: T[]): T[] {
+  return Array.from(arr).reverse()
 }

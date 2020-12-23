@@ -1,5 +1,6 @@
+import { register } from './entity'
+import { mixin, use } from './mixin'
 import { importHtml } from './html-loader'
-import { run } from './sandbox'
-import { Entity } from './entity'
+import { runScript } from './sandbox'
 
-export { importHtml, run, Entity }
+export { register, importHtml, runScript, mixin, use }

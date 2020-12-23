@@ -1,121 +1,160 @@
+import type { App } from './types'
+import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
-
-let root: any = null
-
-const enum Tags {
-  Connected = 1 << 1,
-  Loaded = 1 << 2,
-  Mounted = 1 << 3,
-  Unmounted = 1 << 4
+import { reverse } from './util'
+export enum Status {
+  NOT_LOADED = 'NOT_LOADED',
+  LOADING = 'LOADING',
+  NOT_BOOTSTRAPPED = 'NOT_BOOTSTRAPPED',
+  BOOTSTRAPPING = 'BOOTSTRAPPING',
+  NOT_MOUNTED = 'NOT_MOUNTED',
+  MOUNTING = 'MOUNTING',
+  MOUNTED = 'MOUNTED',
+  UPDATING = 'UPDATING',
+  UPDATED = 'UPDATED',
+  UNMOUNTING = 'UNMOUNTING'
 }
 
-export class Entity extends HTMLElement {
-  baseUrl: string
-  urlStack: any
-  constructor() {
-    super()
-    this.attachShadow({ mode: 'open' })
-    this.baseUrl = '/'
-    this.urlStack = window.location.pathname.split('/')
-  }
-  connectedCallback(): void {
-    connect(this)
-  }
-  disconnectedCallback(): void {
-    unmount(this)
-  }
-}
+let apps: App[] = []
 
-async function connect(host: any): Promise<any> {
-  if (host.tag & Tags.Connected) return host
-  host['b-p'] = []
-  host['b-rc'] = []
-
-  // find the neartist parent and push a promise
-  let p = host
-  while ((p = p.parentNode)) {
-    if (p && p['b-p']) {
-      host['b-l'] = p['b-l'] + 1
-      if (host.slot === host.urlStack[host['b-l'] - 1]) {
-        p['b-p'].push(new Promise((r: any) => (host['b-r'] = r)))
-        p['b-rc'].unshift(mount.bind(null, host))
-      }
-      break
-    } else {
-      host['b-l'] = 1
-      root = host
-    }
-  }
-
-  load(host)
-
-  if (p && p['b-p']) {
-    Promise.all(p['b-p']).then((res) => {
-      mount(p)
-      p['b-p'] = null
-    })
-  }
-
-  if (!host.nextElementSibling && !host.firstChild) {
-    p['b-rc'].map((r: any) => r())
-  }
-
-  host.tag |= Tags.Connected
-  return host
-}
-
-async function load(host: any): Promise<any> {
-  if (!host.loaded) {
-    if (host.path) {
-      const { lifecycle, bodyNode, styleNodes } = await importHtml(host)
-      const frag = document.createDocumentFragment()
-      styleNodes.forEach((s) => frag.appendChild(s))
-      frag.appendChild(bodyNode.content.cloneNode(true))
-      host.shadowRoot.appendChild(frag)
-      host.lifecycle = lifecycle
-    } else {
-      const template = document.createElement('template')
-      template.innerHTML = `
-      <style>.path{color: #3f51b5;padding: 10px;}</style>
-      <li class=path> path 参数呢::>_<:: </li>`
-      host.shadowRoot.appendChild(template.content.cloneNode(true))
-    }
-    host.loaded = true
-  }
-  const name = host.urlStack[host['b-l']]
-  if (name) {
-    const template = document.createElement('template')
-    template.innerHTML = `<slot name='${name}'></slot>`
-    host.shadowRoot.appendChild(template.content.cloneNode(true))
-  }
-  if (host.slot === '' || host.slot === host.urlStack[host['b-l'] - 1]) {
-    host.lifecycle.load(host)
-  }
-}
-
-function mount(host: any): void {
-  if (host.tag & Tags.Mounted) return
-  let p = Promise.resolve() as any
-  p = host.lifecycle.mount(host)
-
-  if (p && typeof p.then === 'function') {
-    p.then(() => {
-      host['b-r'] && host['b-r']()
-      host.tag |= Tags.Mounted
-    })
-  } else {
-    host['b-r'] && host['b-r']()
-    host.tag |= Tags.Mounted
-  }
-}
-
-function unmount(host: any): void {
-  host.lifecycle.unmount(host)
-  host.tag = Tags.Loaded
+export function register(appArray: any[]): void {
+  appArray.forEach((app: any) => (app.status = Status.NOT_LOADED))
+  apps = appArray
+  hack()
+  reroute()
 }
 
 function reroute(): void {
-  load(root)
+  const { loads, mounts, unmounts } = getAppChanges()
+  perform()
+  async function perform(): Promise<void> {
+    unmounts.map(runUnmount)
+
+    loads.map(async (app) => {
+      app = await runLoad(app)
+      app = await runBootstrap(app)
+      return runMount(app)
+    })
+
+    mounts.map(async (app) => {
+      app = await runBootstrap(app)
+      return runMount(app)
+    })
+  }
+}
+
+function getAppChanges(): {
+  unmounts: App[]
+  loads: App[]
+  mounts: App[]
+} {
+  const unmounts: App[] = []
+  const loads: App[] = []
+  const mounts: App[] = []
+
+  apps.forEach((app: any) => {
+    const isActive: boolean = app.path(window.location)
+    switch (app.status) {
+      case Status.NOT_LOADED:
+      case Status.LOADING:
+        isActive && loads.push(app)
+        break
+      case Status.NOT_BOOTSTRAPPED:
+      case Status.BOOTSTRAPPING:
+      case Status.NOT_MOUNTED:
+        isActive && mounts.push(app)
+        break
+      case Status.MOUNTED:
+        !isActive && unmounts.push(app)
+        break
+    }
+  })
+  return { unmounts, loads, mounts }
+}
+
+function compose(
+  fns: ((app: App) => Promise<any>)[]
+): (app: App) => Promise<void> {
+  fns = Array.isArray(fns) ? fns : [fns]
+  return (app: App): Promise<void> =>
+    fns.reduce((p, fn) => p.then(() => fn(app)), Promise.resolve())
+}
+
+async function runLoad(app: App): Promise<any> {
+  if (app.loaded) return app.loaded
+  app.loaded = Promise.resolve().then(async () => {
+    app.status = Status.LOADING
+    let mixinLife = mapMixin()
+    app.host = await loadShadowDOM(app)
+    const { dom, lifecycles } = await importHtml(app)
+    app.host?.appendChild(dom)
+    app.status = Status.NOT_BOOTSTRAPPED
+    app.bootstrap = compose(mixinLife.bootstrap.concat(lifecycles.bootstrap))
+    app.mount = compose(mixinLife.mount.concat(lifecycles.mount))
+    app.unmount = compose(mixinLife.unmount.concat(lifecycles.unmount))
+    delete app.loaded
+    return app
+  })
+  return app.loaded
+}
+
+function loadShadowDOM(app: App): Promise<DocumentFragment> {
+  return new Promise((resolve, reject) => {
+    class Berial extends HTMLElement {
+      static get tag(): string {
+        return app.name
+      }
+      constructor() {
+        super()
+        resolve(this.attachShadow({ mode: 'open' }))
+      }
+    }
+    const hasDef = window.customElements.get(app.name)
+    if (!hasDef) {
+      customElements.define(app.name, Berial)
+    }
+  })
+}
+
+async function runUnmount(app: App): Promise<App> {
+  if (app.status != Status.MOUNTED) {
+    return app
+  }
+  app.status = Status.UNMOUNTING
+  await app.unmount(app)
+  app.status = Status.NOT_MOUNTED
+  return app
+}
+
+async function runBootstrap(app: App): Promise<App> {
+  if (app.status !== Status.NOT_BOOTSTRAPPED) {
+    return app
+  }
+  app.status = Status.BOOTSTRAPPING
+  await app.bootstrap(app)
+  app.status = Status.NOT_MOUNTED
+  return app
+}
+
+async function runMount(app: App): Promise<App> {
+  if (app.status !== Status.NOT_MOUNTED) {
+    return app
+  }
+  app.status = Status.MOUNTING
+  await app.mount(app)
+  app.status = Status.MOUNTED
+  return app
+}
+
+function hack(): void {
+  window.addEventListener = hackEventListener(window.addEventListener)
+  window.removeEventListener = hackEventListener(window.removeEventListener)
+
+  window.history.pushState = hackHistory(window.history.pushState)
+  window.history.replaceState = hackHistory(window.history.replaceState)
+
+  window.addEventListener('hashchange', reroute)
+  window.addEventListener('popstate', reroute)
 }
 
 const captured = {
@@ -123,41 +162,29 @@ const captured = {
   popstate: []
 } as any
 
-window.addEventListener('hashchange', reroute)
-window.addEventListener('popstate', reroute)
-const oldAEL = window.addEventListener
-const oldREL = window.removeEventListener
-
-window.addEventListener = function (name: any, fn: any): void {
-  if (
-    (name === 'hashchange' || name === 'popstate') &&
-    !captured[name].some((l: any) => l == fn)
-  ) {
-    captured[name].push(fn)
-    return
+function hackEventListener(func: any): any {
+  return function (name: any, fn: any): any {
+    if (name === 'hashchange' || name === 'popstate') {
+      if (!captured[name].some((l: any) => l == fn)) {
+        captured[name].push(fn)
+        return
+      } else {
+        captured[name] = captured[name].filter((l: any) => l !== fn)
+        return
+      }
+    }
+    return func.apply(this, arguments as any)
   }
-  return oldAEL.apply(this, arguments as any)
 }
 
-window.removeEventListener = function (name: any, fn: any): void {
-  if (name === 'hashchange' || name === 'popstate') {
-    captured[name] = captured[name].filter((l: any) => l !== fn)
-    return
-  }
-  return oldREL.apply(this, arguments as any)
-}
-
-function polyfillHistory(fn: any): () => void {
+function hackHistory(fn: any): () => void {
   return function (): void {
-    const before = window.location.pathname
+    const before = window.location.href
     fn.apply(window.history, arguments)
-    const after = window.location.pathname
+    const after = window.location.href
     if (before !== after) {
       new PopStateEvent('popstate')
       reroute()
     }
   }
 }
-
-window.history.pushState = polyfillHistory(window.history.pushState)
-window.history.replaceState = polyfillHistory(window.history.replaceState)
