@@ -11,7 +11,7 @@
 
 Berial is a new approach to a popular idea: build a javascript framework for front-end microservices.
 
-There are any wonderful features of it, such as Asynchronous rendering pipeline (like React Fiber), Web components (shadow DOM + scoped css), JavaScript sandbox (Proxy + MutationObserver).
+There are any wonderful features of it, such as Asynchronous rendering pipeline, Web components (shadow DOM + scoped css), JavaScript sandbox (Proxy).
 
 Note: diffence form fre, Berial will pay attention to business value.
 
