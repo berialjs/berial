@@ -41,7 +41,6 @@ export function runScript(code: string, allow: any = {}): any {
       Function,
       parseInt,
       document,
-      navigator,
       location,
       performance,
       MessageChannel,
