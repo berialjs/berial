@@ -13,7 +13,7 @@ Berial is a new approach to a popular idea: build a javascript framework for fro
 
 There are any wonderful features of it, such as Asynchronous rendering pipeline, Web components (shadow DOM + scoped css), JavaScript sandbox (Proxy).
 
-Note: diffence form fre, Berial will pay attention to business value.
+Note: different from fre, Berial will pay attention to business value.
 
 ### Use
 
