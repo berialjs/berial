@@ -24,12 +24,13 @@ Note: diffence form fre, Berial will pay attention to business value.
 <script type="module">
   import { register } from 'berial'
   register([{
-    name: 'one-app'
-    url: '1.html'
-    allowList: {} // 沙箱白名单
+    name: 'one-app',
+    url: '1.html',
+    allowList: ['fre'] // 沙箱白名单
   },{
-    name: 'two-app'
-    scripts: ['2.js'] // 可选
+    name: 'two-app',
+    scripts: ['2.js'], // 可选
+    styles: ['2.css']
   }])
 </script>
 ```

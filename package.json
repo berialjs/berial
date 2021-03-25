@@ -11,7 +11,7 @@
     "check": "run-p fmt-check lint",
     "fix": "run-s \"lint -- --fix\"",
     "fmt": "run-s \"fmt-check -- --write\"",
-    "fmt-check": "prettier --check **/*.{md,json,ts}",
+    "fmt-check": "prettier --check **/*.{json,ts}",
     "lint": "eslint **/*.ts",
     "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
   },
