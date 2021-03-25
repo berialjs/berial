@@ -13,10 +13,7 @@
     "fmt": "run-s \"fmt-check -- --write\"",
     "fmt-check": "prettier --check **/*.{md,json,ts}",
     "lint": "eslint **/*.ts",
-    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit",
-    "demo:init": "cd example/parent && npm run install:all && cd ../..",
-    "demo:serve": "npm run build && cd example/parent && npm start && cd ../..",
-    "demo:build": "npm run build && cd example/parent && npm run build:all"
+    "type": "tsc --project tsconfig.json --skipLibCheck --noEmit"
   },
   "repository": {
     "type": "git",

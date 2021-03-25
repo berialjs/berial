@@ -1,7 +1,7 @@
 import type { App } from './types'
 import { mapMixin } from './mixin'
 import { importHtml } from './html-loader'
-import { reverse } from './util'
+
 export enum Status {
   NOT_LOADED = 'NOT_LOADED',
   LOADING = 'LOADING',
@@ -53,7 +53,10 @@ function getAppChanges(): {
   const mounts: App[] = []
 
   apps.forEach((app: any) => {
-    const isActive: boolean = app.path(window.location)
+    const isActive =
+      typeof app.path === 'function'
+        ? app.path(window.location)
+        : window.location.pathname === app.path
     switch (app.status) {
       case Status.NOT_LOADED:
       case Status.LOADING:

@@ -172,7 +172,9 @@ export async function importHtml(app: any): Promise<any> {
     )
   )
   styles = styles.map((s: string) =>
-    hasProtocol(s) || s.endsWith('.css') ? `<link rel="stylesheet" href="${s}" ></link>` : `<style>${s}<style>`
+    hasProtocol(s) || s.endsWith('.css')
+      ? `<link rel="stylesheet" href="${s}" ></link>`
+      : `<style>${s}<style>`
   )
   template = template
 
