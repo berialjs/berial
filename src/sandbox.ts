@@ -127,7 +127,6 @@ export function runScript(code: string, allow: any = []): any {
       `with(capture) {     
             with(proxy) {  
               return (function(){                                               
-                "use strict";
                 ${code};
                 return window
               })();
