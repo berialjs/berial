@@ -1,5 +1,5 @@
 export function runScript(code: string, allow: any = []): any {
-  const allowObj = allow.reduce((obj:any, cur:any):any=> {
+  const allowObj = allow.reduce((obj: any, cur: any): any => {
     obj[cur] = window[cur]
     return obj
   }, {}) as any
@@ -96,7 +96,7 @@ export function runScript(code: string, allow: any = []): any {
       scrollX,
       scrollY,
       // custom allow list
-      ...allow
+      ...allowObj
     }
 
     if (!Object.isFrozen(String.prototype)) {
