@@ -96,7 +96,7 @@ export function runScript(code: string, allow: any = []): any {
       scrollX,
       scrollY,
       // custom allow list
-      ...allow
+      ...allowObj
     }
 
     if (!Object.isFrozen(String.prototype)) {
