@@ -166,7 +166,7 @@ export async function importHtml(app: any): Promise<any> {
     scripts.map((s: string) =>
       hasProtocol(s)
         ? request(s)
-        : s.endsWith('.js')
+        : s.endsWith('.js') || s.endsWith('.jsx')
         ? request(window.origin + s)
         : s
     )
