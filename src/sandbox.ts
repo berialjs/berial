@@ -1,4 +1,9 @@
-export function runScript(code: string, allow: any = {}): any {
+export function runScript(code: string, allow: any = []): any {
+  const allowObj = allow.reduce((obj:any, cur:any):any=> {
+    obj[cur] = window[cur]
+    return obj
+  }, {}) as any
+
   try {
     const handler = {
       get(obj: any, prop: string): any {

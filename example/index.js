@@ -12,7 +12,8 @@ register([
   {
     name: 'child-fre',
     url: 'https://berial-child-fre.vercel.app',
-    path: ({ pathname }) => pathname !== '/react' && pathname !== '/vue'
+    path: ({ pathname }) => pathname !== '/react' && pathname !== '/vue',
+    allowList:['document']
   },
   {
     name: 'child-react',
